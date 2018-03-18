@@ -12,7 +12,6 @@ class Application {
     const MODE_PROD = "prod";
 
     private $mode = self::MODE_PROD;
-    private $class;
     private $rootDir = "";
     private $container;
     private $router;
@@ -42,10 +41,6 @@ class Application {
         return $this;
     }
 
-    public function getClass() {
-        return $this->class;
-    }
-
     public function showDisplayErrors(bool $bool): self {
         if ($bool === TRUE) {
             ini_set("display_errors", 1);
@@ -60,17 +55,7 @@ class Application {
 
     public function run() {
         $route = $this->router->match();
-        $class = $route['class'];
-        $method = $route['method'];
-
-        if (!empty($class)) {
-            $this->class = $this->container->get($class);
-            $this->class->onLoad();
-            $this->class->$method();
-            $this->class->render();
-        }
-
-        return $this->class;
+        return $route;
     }
 
 }
