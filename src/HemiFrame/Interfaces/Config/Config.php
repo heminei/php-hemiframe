@@ -9,7 +9,4 @@ namespace HemiFrame\Interfaces\Config;
  */
 interface Config {
 
-	public function getDefaultController();
-
-	public function getDefaultControllerMethod();
 }
