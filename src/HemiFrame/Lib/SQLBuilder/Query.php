@@ -4,9 +4,9 @@ namespace HemiFrame\Lib\SQLBuilder;
 
 /**
  * @author heminei <heminei@heminei.com>
- * @version 2.0
  */
-class Query {
+class Query
+{
 
     const DEFAULT_VALUE = "f056c6dc7b3fc49ea4655853bea9b1d4e637a52d3d4a582985175f513fb9589241e21657f686e633c36760416031546cfe283d9961b9ac19aa2c45175dbbc9dd";
 
@@ -32,14 +32,14 @@ class Query {
      *
      * @var \PDO
      */
-    private $pdo = NULL;
+    private $pdo = null;
 
     /**
      *
      * @var array
      */
     private $query = array(
-        "type" => NULL,
+        "type" => null,
     );
 
     /**
@@ -64,7 +64,7 @@ class Query {
      *
      * @var mixed
      */
-    private $tables = NULL;
+    private $tables = null;
 
     /**
      *
@@ -118,13 +118,13 @@ class Query {
      *
      * @var string
      */
-    private $limit = NULL;
+    private $limit = null;
 
     /**
      *
      * @var string
      */
-    private $onDuplicateKeyUpdate = NULL;
+    private $onDuplicateKeyUpdate = null;
 
     /**
      *
@@ -136,9 +136,10 @@ class Query {
      *
      * @var string
      */
-    private $plainQueryString = NULL;
+    private $plainQueryString = null;
 
-    public function __construct(array $config = []) {
+    public function __construct(array $config = [])
+    {
         $this->config = array_merge(self::$global);
         $this->config = array_merge($this->config, $config);
 
@@ -156,7 +157,8 @@ class Query {
      * @throws QueryException
      * @return self
      */
-    public function setPdo(\PDO $pdo): self {
+    public function setPdo(\PDO $pdo) : self
+    {
         if (!$pdo instanceof \PDO) {
             throw new QueryException("Set PDO object");
         }
@@ -169,7 +171,8 @@ class Query {
      *
      * @return \PDO
      */
-    public function getPdo(): \PDO {
+    public function getPdo() : \PDO
+    {
         return $this->pdo;
     }
 
@@ -179,7 +182,8 @@ class Query {
      * @param mixed $value
      * @return self
      */
-    public function setVar(string $name, $value): self {
+    public function setVar(string $name, $value) : self
+    {
         if (empty($name)) {
             throw new QueryException("Enter var name");
         }
@@ -200,7 +204,8 @@ class Query {
      * @param array $array
      * @return self
      */
-    public function setVars(array $array): self {
+    public function setVars(array $array) : self
+    {
         if (!is_array($array)) {
             throw new QueryException("Invalid array");
         }
@@ -214,7 +219,8 @@ class Query {
      *
      * @return array
      */
-    public function getValues(): array {
+    public function getValues() : array
+    {
         return $this->values;
     }
 
@@ -222,7 +228,8 @@ class Query {
      *
      * @return array
      */
-    public function getVars(): array {
+    public function getVars() : array
+    {
         $vars = [];
         foreach ($this->subQueries as $query) {
             /* @var $query self */
@@ -240,7 +247,8 @@ class Query {
      *
      * @return array
      */
-    public function getSubQueries(): array {
+    public function getSubQueries() : array
+    {
         return $this->subQueries;
     }
 
@@ -249,7 +257,8 @@ class Query {
      * @param string $name
      * @return mixed
      */
-    public function getVar(string $name) {
+    public function getVar(string $name)
+    {
         if (isset($this->vars[$name])) {
             return $this->vars[$name];
         }
@@ -260,7 +269,8 @@ class Query {
      *
      * @return float
      */
-    public function getExecutionTime(): float {
+    public function getExecutionTime() : float
+    {
         return $this->executionTime;
     }
 
@@ -268,7 +278,8 @@ class Query {
      *
      * @return int
      */
-    public function getLastInsertId(): int {
+    public function getLastInsertId() : int
+    {
         return $this->pdo->lastInsertId();
     }
 
@@ -277,7 +288,8 @@ class Query {
      * Returns TRUE on success or FALSE on failure.
      * @return bool
      */
-    public function beginTransaction(): bool {
+    public function beginTransaction() : bool
+    {
         return $this->pdo->beginTransaction();
     }
 
@@ -286,7 +298,8 @@ class Query {
      * Returns TRUE on success or FALSE on failure.
      * @return bool
      */
-    public function commit(): bool {
+    public function commit() : bool
+    {
         return $this->pdo->commit();
     }
 
@@ -295,7 +308,8 @@ class Query {
      * Returns TRUE on success or FALSE on failure.
      * @return bool
      */
-    public function rollBack(): bool {
+    public function rollBack() : bool
+    {
         return $this->pdo->rollBack();
     }
 
@@ -303,7 +317,8 @@ class Query {
      * Checks if inside a transaction
      * @return bool
      */
-    public function inTransaction(): bool {
+    public function inTransaction() : bool
+    {
         return $this->pdo->inTransaction();
     }
 
@@ -312,7 +327,8 @@ class Query {
      * @param string $query
      * @return \PDOStatement
      */
-    public function prepare(string $query): \PDOStatement {
+    public function prepare(string $query) : \PDOStatement
+    {
         return $this->pdo->prepare($query);
     }
 
@@ -321,7 +337,8 @@ class Query {
      * @return \PDOStatement
      * @throws QueryException
      */
-    public function execute(): \PDOStatement {
+    public function execute() : \PDOStatement
+    {
         $timeStart = microtime(true);
 
         $PDOStatement = $this->prepare($this->getQueryString());
@@ -367,7 +384,8 @@ class Query {
      *
      * @return array
      */
-    public function fetchObjects(): array {
+    public function fetchObjects() : array
+    {
         return $this->execute()->fetchAll(\PDO::FETCH_OBJ);
     }
 
@@ -375,7 +393,8 @@ class Query {
      *
      * @return mixed
      */
-    public function fetchFirstObject() {
+    public function fetchFirstObject()
+    {
         return $this->execute()->fetchObject();
     }
 
@@ -383,7 +402,8 @@ class Query {
      *
      * @return array
      */
-    public function fetchArrays(): array {
+    public function fetchArrays() : array
+    {
         return $this->execute()->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -391,15 +411,21 @@ class Query {
      *
      * @return mixed
      */
-    public function fetchFirstArray() {
-        return $this->execute()->fetch(\PDO::FETCH_ASSOC);
+    public function fetchFirstArray()
+    {
+        $result = $this->execute()->fetch(\PDO::FETCH_ASSOC);
+        if ($result === false) {
+            $result = null;
+        }
+        return $result;
     }
 
     /**
      *
      * @return int
      */
-    public function rowCount(): int {
+    public function rowCount() : int
+    {
         return $this->execute()->rowCount();
     }
 
@@ -408,7 +434,8 @@ class Query {
      * @param mixed $tables
      * @return self
      */
-    public function insertInto($tables): self {
+    public function insertInto($tables) : self
+    {
         $this->setQueryType("insertInto");
         $this->setTables($tables);
         return $this;
@@ -419,7 +446,8 @@ class Query {
      * @param mixed $tables
      * @return self
      */
-    public function insertIgnore($tables): self {
+    public function insertIgnore($tables) : self
+    {
         $this->setQueryType("insertIgnore");
         $this->setTables($tables);
         return $this;
@@ -430,7 +458,8 @@ class Query {
      * @param mixed $tables
      * @return self
      */
-    public function insertDelayed($tables): self {
+    public function insertDelayed($tables) : self
+    {
         $this->setQueryType("insertDelayed");
         $this->setTables($tables);
         return $this;
@@ -441,7 +470,8 @@ class Query {
      * @param mixed $columns
      * @return self
      */
-    public function select($columns = "*"): self {
+    public function select($columns = "*") : self
+    {
         $this->setQueryType("select");
         if (is_string($columns)) {
             $arrayColumns = explode(",", $columns);
@@ -452,7 +482,8 @@ class Query {
         return $this;
     }
 
-    public function set($column, $value = self::DEFAULT_VALUE): self {
+    public function set($column, $value = self::DEFAULT_VALUE) : self
+    {
         if (is_string($column)) {
             $column = trim($column);
             if ($value === self::DEFAULT_VALUE) {
@@ -476,7 +507,8 @@ class Query {
      * @param array $values
      * @return self
      */
-    public function values($columns, $values): self {
+    public function values($columns, $values) : self
+    {
         if (is_string($columns)) {
             $this->values["columns"] = explode(",", $columns);
         } elseif (is_array($columns)) {
@@ -493,14 +525,14 @@ class Query {
             throw new QueryException("Values is not array");
         }
 
-        $this->values["columns"] = array_map(function($item) {
+        $this->values["columns"] = array_map(function ($item) {
             if (!strstr($item, "`") && !strstr($item, ".")) {
                 $item = "`$item`";
             }
             return $item;
         }, $this->values["columns"]);
 
-        $this->values["values"] = array_map(function($row) {
+        $this->values["values"] = array_map(function ($row) {
             foreach ($row as $keyValue => $value) {
                 $parameterName = $this->generateParameterName($value);
                 $row[$keyValue] = ":" . $parameterName;
@@ -516,7 +548,8 @@ class Query {
      * @param mixed $table
      * @return $this
      */
-    public function update($table): self {
+    public function update($table) : self
+    {
         if (empty($table)) {
             throw new QueryException("Enter table name");
         }
@@ -525,7 +558,8 @@ class Query {
         return $this;
     }
 
-    public function onDuplicateKeyUpdate($string): self {
+    public function onDuplicateKeyUpdate($string) : self
+    {
         $this->onDuplicateKeyUpdate = $string;
 
         return $this;
@@ -536,7 +570,8 @@ class Query {
      * @param mixed $table
      * @return $this
      */
-    public function delete($table = null): self {
+    public function delete($table = null) : self
+    {
         if (!empty($table)) {
             $this->setTables($table);
         }
@@ -550,7 +585,8 @@ class Query {
      * @param string $alias
      * @return $this
      */
-    public function from($table, $alias = ""): self {
+    public function from($table, $alias = "") : self
+    {
         if (empty($table)) {
             throw new QueryException("Enter table name");
         }
@@ -565,7 +601,8 @@ class Query {
      * @param string $relation
      * @return $this
      */
-    public function leftJoin($table, $alias, $relation): self {
+    public function leftJoin($table, $alias, $relation) : self
+    {
         $this->setJoinTable("LEFT JOIN", $table, $alias, $relation);
         return $this;
     }
@@ -577,7 +614,8 @@ class Query {
      * @param string $relation
      * @return $this
      */
-    public function rightJoin($table, $alias, $relation): self {
+    public function rightJoin($table, $alias, $relation) : self
+    {
         $this->setJoinTable("RIGHT JOIN", $table, $alias, $relation);
         return $this;
     }
@@ -589,7 +627,8 @@ class Query {
      * @param string $relation
      * @return $this
      */
-    public function innerJoin($table, $alias, $relation): self {
+    public function innerJoin($table, $alias, $relation) : self
+    {
         $this->setJoinTable("INNER JOIN", $table, $alias, $relation);
         return $this;
     }
@@ -601,26 +640,31 @@ class Query {
      * @param string $relation
      * @return $this
      */
-    public function straightJoin($table, $alias, $relation): self {
+    public function straightJoin($table, $alias, $relation) : self
+    {
         $this->setJoinTable("STRAIGHT_JOIN", $table, $alias, $relation);
         return $this;
     }
 
-    public function where($column, $value = self::DEFAULT_VALUE, $operator = "="): self {
+    public function where($column, $value = self::DEFAULT_VALUE, $operator = "=") : self
+    {
         return $this->parseWhereCondition($column, $value, $operator);
     }
 
-    public function having($string): self {
+    public function having($string) : self
+    {
         $this->havingConditions = [];
         $this->havingConditions[] = array("operator" => "", "condition" => $string);
         return $this;
     }
 
-    public function andWhere($column, $value = self::DEFAULT_VALUE, $operator = "="): self {
+    public function andWhere($column, $value = self::DEFAULT_VALUE, $operator = "=") : self
+    {
         return $this->parseWhereCondition($column, $value, $operator, "AND");
     }
 
-    public function orWhere($column, $value = self::DEFAULT_VALUE, $operator = "="): self {
+    public function orWhere($column, $value = self::DEFAULT_VALUE, $operator = "=") : self
+    {
         return $this->parseWhereCondition($column, $value, $operator, "OR");
     }
 
@@ -629,7 +673,8 @@ class Query {
      * @param mixed $columns
      * @return $this
      */
-    public function groupBy($columns): self {
+    public function groupBy($columns) : self
+    {
         if (is_string($columns)) {
             $arrayColumns = explode(",", $columns);
             $this->groupByColumns = array_merge($this->groupByColumns, $arrayColumns);
@@ -644,7 +689,8 @@ class Query {
      * @param mixed $columns
      * @return $this
      */
-    public function orderBy($columns): self {
+    public function orderBy($columns) : self
+    {
         if (is_string($columns)) {
             $arrayColumns = explode(",", $columns);
             $this->orderByColumns = array_merge($this->orderByColumns, $arrayColumns);
@@ -659,7 +705,8 @@ class Query {
      * @param string|self $query
      * @return $this
      */
-    public function unionAll($query) {
+    public function unionAll($query)
+    {
         if (is_string($query)) {
             $this->unions[] = [
                 "type" => "ALL",
@@ -680,7 +727,8 @@ class Query {
      * @param string $string
      * @return $this
      */
-    public function limit(string $string): self {
+    public function limit(string $string) : self
+    {
         $this->limit = $string;
         return $this;
     }
@@ -691,7 +739,8 @@ class Query {
      * @param int $itemsPerPage
      * @return $this
      */
-    public function paginationLimit(int $page = 1, int $itemsPerPage = 10): self {
+    public function paginationLimit(int $page = 1, int $itemsPerPage = 10) : self
+    {
         $offset = ($page - 1) * $itemsPerPage;
         $this->limit("$offset, $itemsPerPage");
         return $this;
@@ -702,20 +751,22 @@ class Query {
      * @param string $query
      * @return $this
      */
-    public function setQueryString(string $query): self {
+    public function setQueryString(string $query) : self
+    {
         $this->plainQueryString = $query;
 
         return $this;
     }
 
-    public function getQueryString(bool $replaceParameters = false): string {
-        if ($this->plainQueryString !== NULL) {
+    public function getQueryString(bool $replaceParameters = false) : string
+    {
+        if ($this->plainQueryString !== null) {
             $queryString = $this->plainQueryString;
         } else {
             if (empty($this->tables)) {
                 throw new QueryException("Enter table");
             }
-            if ($this->getQueryType() === NULL) {
+            if ($this->getQueryType() === null) {
                 throw new QueryException("Set query type (insertInto, insertIgnore, insertDelayed, select, update, delete)");
             }
 
@@ -760,7 +811,7 @@ class Query {
                         /**
                          * ADD SET COLUMNS
                          */
-                        $setColumns = array_map(function($array) {
+                        $setColumns = array_map(function ($array) {
                             $column = $array["column"];
                             $parameter = $array["parameter"];
                             if ($parameter === false) {
@@ -777,7 +828,7 @@ class Query {
                          */
                         $queryString .= "(" . implode(",", $this->values['columns']) . ") ";
 
-                        $values = array_map(function($array) {
+                        $values = array_map(function ($array) {
                             return "(" . implode(",", $array) . ")";
                         }, $this->values['values']);
                         $queryString .= "VALUES " . implode(",", $values) . " ";
@@ -789,7 +840,7 @@ class Query {
                     if (!empty($this->whereConditions)) {
                         $queryString .= "WHERE ";
                     }
-                    foreach ($this->whereConditions AS $key => $value) {
+                    foreach ($this->whereConditions as $key => $value) {
                         if ($value['value'] instanceof self) {
                             $value['condition'] .= "(" . $value['value']->getQueryString() . ")";
                         }
@@ -800,7 +851,7 @@ class Query {
                         }
                     }
 
-                    if ($this->onDuplicateKeyUpdate !== NULL) {
+                    if ($this->onDuplicateKeyUpdate !== null) {
                         $queryString .= "ON DUPLICATE KEY UPDATE " . $this->onDuplicateKeyUpdate . " ";
                     }
 
@@ -811,7 +862,7 @@ class Query {
                     /**
                      * ADD SELECTED COLUMNS
                      */
-                    $columns = array_map(function($column) {
+                    $columns = array_map(function ($column) {
                         return trim($column);
                     }, $this->columns);
                     $queryString .= implode(",", $columns) . " ";
@@ -852,7 +903,7 @@ class Query {
                     if (!empty($this->whereConditions)) {
                         $queryString .= "WHERE ";
                     }
-                    foreach ($this->whereConditions AS $key => $value) {
+                    foreach ($this->whereConditions as $key => $value) {
                         if ($value['value'] instanceof self) {
                             $value['condition'] .= "(" . $value['value']->getQueryString() . ")";
                         }
@@ -877,7 +928,7 @@ class Query {
                     if (count($this->havingConditions) > 0) {
                         $havingConditions = "HAVING ";
                         $i = 1;
-                        foreach ($this->havingConditions AS $value) {
+                        foreach ($this->havingConditions as $value) {
                             if ($i == 1) {
                                 $havingConditions .= $value['condition'] . " ";
                             } else {
@@ -898,14 +949,14 @@ class Query {
                     /**
                      * LIMIT
                      */
-                    if ($this->limit !== NULL) {
+                    if ($this->limit !== null) {
                         $queryString .= "LIMIT " . $this->limit . " ";
                     }
 
                     /**
                      * UNION
                      */
-                    foreach ($this->unions AS $key => $value) {
+                    foreach ($this->unions as $key => $value) {
                         if ($value['query'] instanceof self) {
                             $value['query'] = $value['query']->getQueryString();
                         }
@@ -948,7 +999,7 @@ class Query {
                     /**
                      * ADD SET COLUMNS
                      */
-                    $setColumns = array_map(function($array) {
+                    $setColumns = array_map(function ($array) {
                         $column = $array["column"];
                         $parameter = $array["parameter"];
                         if ($parameter === false) {
@@ -965,7 +1016,7 @@ class Query {
                     if (!empty($this->whereConditions)) {
                         $queryString .= "WHERE ";
                     }
-                    foreach ($this->whereConditions AS $key => $value) {
+                    foreach ($this->whereConditions as $key => $value) {
                         if ($value['value'] instanceof self) {
                             $value['condition'] .= "(" . $value['value']->getQueryString() . ")";
                         }
@@ -986,7 +1037,7 @@ class Query {
                     /**
                      * LIMIT
                      */
-                    if ($this->limit !== NULL) {
+                    if ($this->limit !== null) {
                         $queryString .= "LIMIT " . $this->limit . " ";
                     }
 
@@ -1015,7 +1066,7 @@ class Query {
                     if (!empty($this->whereConditions)) {
                         $queryString .= "WHERE ";
                     }
-                    foreach ($this->whereConditions AS $key => $value) {
+                    foreach ($this->whereConditions as $key => $value) {
                         if ($value['value'] instanceof self) {
                             $value['condition'] .= "(" . $value['value']->getQueryString() . ")";
                         }
@@ -1036,7 +1087,7 @@ class Query {
                     /**
                      * LIMIT
                      */
-                    if ($this->limit !== NULL) {
+                    if ($this->limit !== null) {
                         $queryString .= "LIMIT " . $this->limit . " ";
                     }
 
@@ -1060,7 +1111,8 @@ class Query {
         return trim($queryString);
     }
 
-    public static function getDatabaseTables() {
+    public static function getDatabaseTables()
+    {
         $query = new self($this->config);
         $query->select([
             "table_name AS `name`",
@@ -1078,7 +1130,8 @@ class Query {
         return $query->fetchObjects();
     }
 
-    public static function getExecutedQueries() {
+    public static function getExecutedQueries()
+    {
         return self::$global['executedQueries'];
     }
 
@@ -1090,7 +1143,8 @@ class Query {
      * @param string $whereOperator
      * @return self
      */
-    private function parseWhereCondition($column, $value, string $operator = "", $whereOperator = NULL): self {
+    private function parseWhereCondition($column, $value, string $operator = "", $whereOperator = null) : self
+    {
         $condition = "";
         if ($value === self::DEFAULT_VALUE) {
             $condition = $column;
@@ -1139,7 +1193,8 @@ class Query {
      * @param string $type
      * @return self
      */
-    private function setQueryType(string $type): self {
+    private function setQueryType(string $type) : self
+    {
         $this->query['type'] = $type;
 
         return $this;
@@ -1149,7 +1204,8 @@ class Query {
      *
      * @return string
      */
-    private function getQueryType(): string {
+    private function getQueryType() : string
+    {
 
         return $this->query['type'];
     }
@@ -1159,7 +1215,8 @@ class Query {
      * @param mixed $table
      * @return self
      */
-    private function setTables($table, $alias = ""): self {
+    private function setTables($table, $alias = "") : self
+    {
         if ($table instanceof self) {
             /* @var $table Query */
             $this->subQueries[] = $table;
@@ -1176,7 +1233,8 @@ class Query {
      * @param mixed $table
      * @return $this
      */
-    private function setJoinTable($type, $table, $alias = null, $relation = null): self {
+    private function setJoinTable($type, $table, $alias = null, $relation = null) : self
+    {
         if ($table instanceof self) {
             $this->subQueries[] = $table;
         }
@@ -1195,7 +1253,8 @@ class Query {
      * @param bool $bindToQuery
      * @return string
      */
-    private function generateParameterName($value, bool $bindToQuery = true): string {
+    private function generateParameterName($value, bool $bindToQuery = true) : string
+    {
         $name = sha1(uniqid("param", true) . sha1($value));
         if ($bindToQuery) {
             $this->setVar($name, $value);
@@ -1208,7 +1267,8 @@ class Query {
      * @param string $string
      * @return string
      */
-    private function escapeString(string $string): string {
+    private function escapeString(string $string) : string
+    {
         if (!strstr($string, ".") &&
             !strstr($string, "`") &&
             !strstr($string, "<") &&
