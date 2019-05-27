@@ -4,22 +4,25 @@ namespace HemiFrame\Lib;
 
 /**
  * @author heminei
- * @version 1.2
  */
-class Curl {
+class Curl
+{
 
     private $curl;
     private $url;
     private $cookieFile = "/cache/curl_cookie.txt";
     private $userAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0";
-    private $referer = NULL;
+    private $referer = null;
     private $postFields;
     private $proxy;
     private $timeout;
     private $returnTransfer;
     private $customRequest;
+    private $options = [];
+    private $headers = [];
 
-    public function __construct(string $url = NULL) {
+    public function __construct(string $url = null)
+    {
         $this->curl = curl_init();
 
         if (!empty($url)) {
@@ -27,7 +30,8 @@ class Curl {
         }
     }
 
-    public function __destruct() {
+    public function __destruct()
+    {
         $this->close();
     }
 
@@ -35,7 +39,8 @@ class Curl {
      * Returns a cURL handle on success, FALSE on errors.
      * @return \curl_init
      */
-    public function getCurl() {
+    public function getCurl()
+    {
         return $this->curl;
     }
 
@@ -44,7 +49,8 @@ class Curl {
      * @param string $url
      * @return self
      */
-    public function setUrl(string $url): self {
+    public function setUrl(string $url): self
+    {
         $this->url = $url;
         $this->setOption(CURLOPT_URL, $url);
 
@@ -52,10 +58,11 @@ class Curl {
     }
 
     /**
-     * 	Get site url
+     *     Get site url
      * @return string
      */
-    public function getUrl(): string {
+    public function getUrl(): string
+    {
         return $this->url;
     }
 
@@ -64,7 +71,8 @@ class Curl {
      * @param string $file
      * @return self
      */
-    public function setCookieFile(string $file): self {
+    public function setCookieFile(string $file): self
+    {
         $this->cookieFile = $file;
         $this->setOption(CURLOPT_COOKIEJAR, $this->cookieFile);
         return $this;
@@ -74,7 +82,8 @@ class Curl {
      *
      * @return string
      */
-    public function getCookieFile(): string {
+    public function getCookieFile(): string
+    {
         return $this->cookieFile;
     }
 
@@ -83,7 +92,8 @@ class Curl {
      * @param string $agent
      * @return self
      */
-    public function setUserAgent(string $agent): self {
+    public function setUserAgent(string $agent): self
+    {
         $this->userAgent = $agent;
         $this->setOption(CURLOPT_USERAGENT, $this->userAgent);
         return $this;
@@ -93,7 +103,8 @@ class Curl {
      * Get user Agent
      * @return type
      */
-    public function getUserAgent(): string {
+    public function getUserAgent(): string
+    {
         return $this->userAgent;
     }
 
@@ -102,7 +113,8 @@ class Curl {
      * @param string $url
      * @return self
      */
-    public function setReferer(string $url): self {
+    public function setReferer(string $url): self
+    {
         $this->referer = $url;
         $this->setOption(CURLOPT_REFERER, "Referer: $url");
         return $this;
@@ -112,7 +124,8 @@ class Curl {
      * Get referer
      * @return string
      */
-    public function getReferer(): string {
+    public function getReferer(): ?string
+    {
         return $this->referer;
     }
 
@@ -121,7 +134,8 @@ class Curl {
      * @param string $postFields
      * @return self
      */
-    public function setPostFields(string $postFields): self {
+    public function setPostFields(string $postFields): self
+    {
         $this->postFields = $postFields;
         $this->setOption(CURLOPT_POST, 1);
         $this->setOption(CURLOPT_POSTFIELDS, $postFields);
@@ -131,9 +145,10 @@ class Curl {
 
     /**
      *
-     * @return string
+     * @return string|null
      */
-    public function getPostFields(): string {
+    public function getPostFields(): ?string
+    {
         return $this->postFields;
     }
 
@@ -143,7 +158,8 @@ class Curl {
      * @return self
      *
      */
-    public function setProxy(string $string): self {
+    public function setProxy(string $string): self
+    {
         $this->proxy = $string;
         $this->setOption(CURLOPT_PROXY, $string);
         return $this;
@@ -153,7 +169,8 @@ class Curl {
      * Get proxy ip
      * @return string
      */
-    public function getProxy(): self {
+    public function getProxy(): self
+    {
         return $this->proxy;
     }
 
@@ -161,7 +178,8 @@ class Curl {
      * The maximum number of seconds to allow cURL functions to execute.
      * @return int
      */
-    public function getTimeout(): int {
+    public function getTimeout(): int
+    {
         return $this->timeout;
     }
 
@@ -170,7 +188,8 @@ class Curl {
      * @param int $timeout
      * @return self
      */
-    public function setTimeout(int $timeout): self {
+    public function setTimeout(int $timeout): self
+    {
         $this->timeout = $timeout;
         $this->setOption(CURLOPT_TIMEOUT, $timeout);
         return $this;
@@ -180,7 +199,8 @@ class Curl {
      *
      * @return int
      */
-    public function getReturnTransfer() {
+    public function getReturnTransfer()
+    {
         return $this->returnTransfer;
     }
 
@@ -189,7 +209,8 @@ class Curl {
      * @param int $returnTransfer
      * @return self
      */
-    public function setReturnTransfer($returnTransfer) {
+    public function setReturnTransfer($returnTransfer)
+    {
         $this->returnTransfer = $returnTransfer;
         $this->setOption(CURLOPT_RETURNTRANSFER, $this->returnTransfer);
         return $this;
@@ -199,7 +220,8 @@ class Curl {
      *
      * @return string
      */
-    public function getCustomRequest(): string {
+    public function getCustomRequest(): string
+    {
         return $this->customRequest;
     }
 
@@ -208,7 +230,8 @@ class Curl {
      * @param string $customRequest
      * @return self
      */
-    public function setCustomRequest(string $customRequest): self {
+    public function setCustomRequest(string $customRequest): self
+    {
         $this->customRequest = $customRequest;
         $this->setOption(CURLOPT_CUSTOMREQUEST, $customRequest);
 
@@ -219,7 +242,8 @@ class Curl {
      * Return content
      * @return string
      */
-    public function getContent() {
+    public function getContent()
+    {
         $this->setReturnTransfer(1);
         $content = $this->execute();
 
@@ -231,7 +255,8 @@ class Curl {
      * This function should be called after initializing a cURL session and all the options for the session are set.
      * @return \curl_exec
      */
-    public function execute() {
+    public function execute()
+    {
         return curl_exec($this->curl);
     }
 
@@ -239,7 +264,8 @@ class Curl {
      * Close a cURL session
      * @return \curl_close
      */
-    public function close() {
+    public function close()
+    {
         return curl_close($this->curl);
     }
 
@@ -249,8 +275,47 @@ class Curl {
      * @param mixed $value
      * @return self
      */
-    public function setOption(int $option, $value): self {
+    public function setOption(int $option, $value): self
+    {
+        $this->options[$option] = $value;
         curl_setopt($this->curl, $option, $value);
+        return $this;
+    }
+
+    /**
+     * @param integer $option
+     * @return mixed|null
+     */
+    public function getOption(int $option)
+    {
+        if (array_key_exists($option, $this->options)) {
+            return $this->options[$option];
+        }
+        return null;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    public function getHeader(string $name): ?string
+    {
+        if (array_key_exists($name, $this->headers)) {
+            return $this->headers[$name];
+        }
+        return null;
+    }
+
+    public function setHeader(string $name, string $value)
+    {
+        $this->headers[$name] = $value;
+
+        $headerLines = [];
+        foreach ($this->headers as $key => $value) {
+            $headerLines[] = $key . ': ' . $value;
+        }
+        $this->setOption(CURLOPT_HTTPHEADER, $headerLines);
         return $this;
     }
 
@@ -285,7 +350,8 @@ class Curl {
      * @param int $opt
      * @return \curl_getinfo
      */
-    public function getInfo(int $opt = 0) {
+    public function getInfo(int $opt = 0)
+    {
         return curl_getinfo($this->curl, $opt);
     }
 
@@ -293,7 +359,8 @@ class Curl {
      * Return a string containing the last error for the current session - curl_error()
      * @return string
      */
-    public function getError(): string {
+    public function getError(): string
+    {
         return curl_error($this->curl);
     }
 
