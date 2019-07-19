@@ -136,12 +136,12 @@ class Template
 
     /**
      *
-     * @param string $id Loop ID;
+     * @param string $id Loop ID
      * @param array $array Result Array
-     * @param object $instance Object
-     * @param string $method Method
+     * @param object|null $instance Object
+     * @param string|\Closure|null $method Method
      */
-    public function setLoop(string $id, array $array, $instance, string $method = null): self
+    public function setLoop(string $id, array $array, $instance = null, $method = null): self
     {
         $this->clearTagMarker();
         if ($method == null) {
@@ -163,7 +163,11 @@ class Template
                 foreach ($array as $value) {
                     $itemClass = new Template($loopHtml);
                     $iteration->setIndex($i);
-                    $instance->$method($itemClass, $value, $iteration);
+                    if ($instance === null) {
+                        $method($itemClass, $value, $iteration);
+                    } else {
+                        $instance->$method($itemClass, $value, $iteration);
+                    }
                     $htmlString .= $itemClass->parse();
                     $i++;
                 }
