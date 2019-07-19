@@ -43,7 +43,10 @@ class Autoloader
     public static function autoloader(string $class)
     {
         foreach (self::$namespaces as $k => $v) {
-            if (strpos($class, $k) === 0) {
+            if (strpos($class, $k) === 0 || $k === "\\") {
+                if ($k === "\\") {
+                    $class = "\\" . $class;
+                }
                 $filePath = substr_replace(str_replace('\\', self::$directorySeparator, $class), $v, 0, strlen($k)) . '.php';
                 $file = realpath($filePath);
                 if (is_readable($file)) {
