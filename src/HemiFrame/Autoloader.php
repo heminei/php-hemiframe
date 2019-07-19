@@ -43,7 +43,7 @@ class Autoloader
     public static function autoloader(string $class)
     {
         foreach (self::$namespaces as $k => $v) {
-            if (strpos($class, $k) === 0 || $k === "\\") {
+            if (strpos($class, $k) === 0 || (!strstr($class, "\\") && $k === "\\")) {
                 if ($k === "\\") {
                     $class = "\\" . $class;
                 }
