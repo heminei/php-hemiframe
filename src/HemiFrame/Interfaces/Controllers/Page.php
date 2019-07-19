@@ -5,7 +5,8 @@ namespace HemiFrame\Interfaces\Controllers;
 /**
  * @author heminei
  */
-interface Page {
+interface Page
+{
 
-	public function index();
+    public function index();
 }

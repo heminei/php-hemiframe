@@ -5,7 +5,8 @@ namespace HemiFrame\Interfaces;
 /**
  * @author heminei
  */
-interface Singleton {
+interface Singleton
+{
 
-	public static function instance();
+    public static function instance();
 }

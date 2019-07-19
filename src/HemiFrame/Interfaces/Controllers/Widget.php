@@ -5,7 +5,7 @@ namespace HemiFrame\Interfaces\Controllers;
 /**
  * @author heminei
  */
-interface Widget {
-
-	public function index();
+interface Widget
+{
+    public function index();
 }

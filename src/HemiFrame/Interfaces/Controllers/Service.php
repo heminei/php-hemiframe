@@ -5,7 +5,8 @@ namespace HemiFrame\Interfaces\Controllers;
 /**
  * @author heminei <heminei@heminei.com>
  */
-interface Service {
+interface Service
+{
 
-	public function index();
+    public function index();
 }

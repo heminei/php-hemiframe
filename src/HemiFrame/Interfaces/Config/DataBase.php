@@ -3,11 +3,10 @@
 namespace HemiFrame\Interfaces\Config;
 
 /**
- * Description of Interface
- *
  * @author heminei
  */
-interface DataBase {
+interface DataBase
+{
 
-	public function getPdoInstance();
+    public function getPdoInstance();
 }

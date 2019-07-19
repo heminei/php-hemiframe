@@ -3,15 +3,14 @@
 namespace HemiFrame\Interfaces\Config;
 
 /**
- * Description of Interface
- *
  * @author heminei
  */
-interface Cache {
+interface Cache
+{
 
-	public function getGlobalPrefix();
+    public function getGlobalPrefix();
 
-	public function getDefaultCacheTime();
+    public function getDefaultCacheTime();
 
-	public function isUseCache();
+    public function isUseCache();
 }

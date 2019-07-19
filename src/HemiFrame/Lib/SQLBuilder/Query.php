@@ -19,7 +19,10 @@ class Query
         "logs" => [
             "errors" => null,
         ],
-        "executedQueries" => []
+        "executedQueries" => [],
+        "resultCache" => [
+            "implementation" => null,
+        ],
     ];
 
     /**
@@ -50,7 +53,7 @@ class Query
 
     /**
      *
-     * @var int
+     * @var float
      */
     private $executionTime = 0;
 
@@ -128,15 +131,35 @@ class Query
 
     /**
      *
-     * @var string
+     * @var array
      */
     private $unions = [];
 
     /**
      *
-     * @var string
+     * @var string|null
      */
     private $plainQueryString = null;
+
+    /**
+     * @var bool
+     */
+    private $useResultCache = false;
+
+    /**
+     * @var \HemiFrame\Interfaces\Cache|null
+     */
+    private $resultCacheImplementation = null;
+
+    /**
+     * @var int
+     */
+    private $resultCacheLifeTime = 0;
+
+    /**
+     * @var string|null
+     */
+    private $resultCacheKey = null;
 
     public function __construct(array $config = [])
     {
@@ -146,6 +169,13 @@ class Query
         if (!empty($this->config['pdo'])) {
             $this->pdo = $this->config['pdo'];
         }
+        if (!empty($this->config['resultCache']['implementation'])) {
+            if (!$this->config['resultCache']['implementation'] instanceof \HemiFrame\Interfaces\Cache) {
+                throw new QueryException("Result cache implementation must be implement \HemiFrame\Interfaces\Cache");
+            }
+            $this->resultCacheImplementation = $this->config['resultCache']['implementation'];
+        }
+
         if (!$this->pdo instanceof \PDO) {
             throw new QueryException("Set PDO object");
         }
@@ -157,7 +187,7 @@ class Query
      * @throws QueryException
      * @return self
      */
-    public function setPdo(\PDO $pdo) : self
+    public function setPdo(\PDO $pdo): self
     {
         if (!$pdo instanceof \PDO) {
             throw new QueryException("Set PDO object");
@@ -171,7 +201,7 @@ class Query
      *
      * @return \PDO
      */
-    public function getPdo() : \PDO
+    public function getPdo(): \PDO
     {
         return $this->pdo;
     }
@@ -182,7 +212,7 @@ class Query
      * @param mixed $value
      * @return self
      */
-    public function setVar(string $name, $value) : self
+    public function setVar(string $name, $value): self
     {
         if (empty($name)) {
             throw new QueryException("Enter var name");
@@ -204,7 +234,7 @@ class Query
      * @param array $array
      * @return self
      */
-    public function setVars(array $array) : self
+    public function setVars(array $array): self
     {
         if (!is_array($array)) {
             throw new QueryException("Invalid array");
@@ -219,7 +249,7 @@ class Query
      *
      * @return array
      */
-    public function getValues() : array
+    public function getValues(): array
     {
         return $this->values;
     }
@@ -228,7 +258,7 @@ class Query
      *
      * @return array
      */
-    public function getVars() : array
+    public function getVars(): array
     {
         $vars = [];
         foreach ($this->subQueries as $query) {
@@ -247,7 +277,7 @@ class Query
      *
      * @return array
      */
-    public function getSubQueries() : array
+    public function getSubQueries(): array
     {
         return $this->subQueries;
     }
@@ -269,16 +299,16 @@ class Query
      *
      * @return float
      */
-    public function getExecutionTime() : float
+    public function getExecutionTime(): float
     {
         return $this->executionTime;
     }
 
     /**
      *
-     * @return int
+     * @return string
      */
-    public function getLastInsertId() : int
+    public function getLastInsertId(): string
     {
         return $this->pdo->lastInsertId();
     }
@@ -288,7 +318,7 @@ class Query
      * Returns TRUE on success or FALSE on failure.
      * @return bool
      */
-    public function beginTransaction() : bool
+    public function beginTransaction(): bool
     {
         return $this->pdo->beginTransaction();
     }
@@ -298,7 +328,7 @@ class Query
      * Returns TRUE on success or FALSE on failure.
      * @return bool
      */
-    public function commit() : bool
+    public function commit(): bool
     {
         return $this->pdo->commit();
     }
@@ -308,7 +338,7 @@ class Query
      * Returns TRUE on success or FALSE on failure.
      * @return bool
      */
-    public function rollBack() : bool
+    public function rollBack(): bool
     {
         return $this->pdo->rollBack();
     }
@@ -317,7 +347,7 @@ class Query
      * Checks if inside a transaction
      * @return bool
      */
-    public function inTransaction() : bool
+    public function inTransaction(): bool
     {
         return $this->pdo->inTransaction();
     }
@@ -327,7 +357,7 @@ class Query
      * @param string $query
      * @return \PDOStatement
      */
-    public function prepare(string $query) : \PDOStatement
+    public function prepare(string $query): \PDOStatement
     {
         return $this->pdo->prepare($query);
     }
@@ -337,7 +367,7 @@ class Query
      * @return \PDOStatement
      * @throws QueryException
      */
-    public function execute() : \PDOStatement
+    public function execute(): \PDOStatement
     {
         $timeStart = microtime(true);
 
@@ -384,9 +414,29 @@ class Query
      *
      * @return array
      */
-    public function fetchObjects() : array
+    public function fetchObjects(): array
     {
-        return $this->execute()->fetchAll(\PDO::FETCH_OBJ);
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $cacheKey = $this->resultCacheKey;
+            if (empty($cacheKey)) {
+                $cacheKey = $this->getQueryString(true);
+            }
+            $cacheKey = __METHOD__ . "-" . $cacheKey;
+            if ($this->resultCacheImplementation->exists($cacheKey)) {
+                return $this->resultCacheImplementation->get($cacheKey);
+            }
+        }
+
+        $data = $this->execute()->fetchAll(\PDO::FETCH_OBJ);
+        if ($data === false) {
+            $data = [];
+        }
+
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $this->resultCacheImplementation->set($cacheKey, $data, $this->resultCacheLifeTime);
+        }
+
+        return $data;
     }
 
     /**
@@ -395,16 +445,83 @@ class Query
      */
     public function fetchFirstObject()
     {
-        return $this->execute()->fetchObject();
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $cacheKey = $this->resultCacheKey;
+            if (empty($cacheKey)) {
+                $cacheKey = $this->getQueryString(true);
+            }
+            $cacheKey = __METHOD__ . "-" . $cacheKey;
+            if ($this->resultCacheImplementation->exists($cacheKey)) {
+                return $this->resultCacheImplementation->get($cacheKey);
+            }
+        }
+
+        $data = $this->execute()->fetchObject();
+
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $this->resultCacheImplementation->set($cacheKey, $data, $this->resultCacheLifeTime);
+        }
+
+        return $data;
     }
 
     /**
      *
      * @return array
      */
-    public function fetchArrays() : array
+    public function fetchArrays(): array
     {
-        return $this->execute()->fetchAll(\PDO::FETCH_ASSOC);
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $cacheKey = $this->resultCacheKey;
+            if (empty($cacheKey)) {
+                $cacheKey = $this->getQueryString(true);
+            }
+            $cacheKey = __METHOD__ . "-" . $cacheKey;
+            if ($this->resultCacheImplementation->exists($cacheKey)) {
+                return $this->resultCacheImplementation->get($cacheKey);
+            }
+        }
+
+        $data = $this->execute()->fetchAll(\PDO::FETCH_ASSOC);
+        if ($data === false) {
+            $data = [];
+        }
+
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $this->resultCacheImplementation->set($cacheKey, $data, $this->resultCacheLifeTime);
+        }
+
+        return $data;
+    }
+
+    /**
+     *
+     * @return array
+     * @throws QueryException
+     */
+    public function fetchColumn(): array
+    {
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $cacheKey = $this->resultCacheKey;
+            if (empty($cacheKey)) {
+                $cacheKey = $this->getQueryString(true);
+            }
+            $cacheKey = __METHOD__ . "-" . $cacheKey;
+            if ($this->resultCacheImplementation->exists($cacheKey)) {
+                return $this->resultCacheImplementation->get($cacheKey);
+            }
+        }
+
+        $data = $this->execute()->fetchAll(\PDO::FETCH_COLUMN);
+        if ($data === false) {
+            $data = [];
+        }
+
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $this->resultCacheImplementation->set($cacheKey, $data, $this->resultCacheLifeTime);
+        }
+
+        return $data;
     }
 
     /**
@@ -413,18 +530,34 @@ class Query
      */
     public function fetchFirstArray()
     {
-        $result = $this->execute()->fetch(\PDO::FETCH_ASSOC);
-        if ($result === false) {
-            $result = null;
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $cacheKey = $this->resultCacheKey;
+            if (empty($cacheKey)) {
+                $cacheKey = $this->getQueryString(true);
+            }
+            $cacheKey = __METHOD__ . "-" . $cacheKey;
+            if ($this->resultCacheImplementation->exists($cacheKey)) {
+                return $this->resultCacheImplementation->get($cacheKey);
+            }
         }
-        return $result;
+
+        $data = $this->execute()->fetch(\PDO::FETCH_ASSOC);
+        if ($data === false) {
+            $data = null;
+        }
+
+        if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
+            $this->resultCacheImplementation->set($cacheKey, $data, $this->resultCacheLifeTime);
+        }
+
+        return $data;
     }
 
     /**
      *
      * @return int
      */
-    public function rowCount() : int
+    public function rowCount(): int
     {
         return $this->execute()->rowCount();
     }
@@ -434,7 +567,7 @@ class Query
      * @param mixed $tables
      * @return self
      */
-    public function insertInto($tables) : self
+    public function insertInto($tables): self
     {
         $this->setQueryType("insertInto");
         $this->setTables($tables);
@@ -446,7 +579,7 @@ class Query
      * @param mixed $tables
      * @return self
      */
-    public function insertIgnore($tables) : self
+    public function insertIgnore($tables): self
     {
         $this->setQueryType("insertIgnore");
         $this->setTables($tables);
@@ -458,7 +591,7 @@ class Query
      * @param mixed $tables
      * @return self
      */
-    public function insertDelayed($tables) : self
+    public function insertDelayed($tables): self
     {
         $this->setQueryType("insertDelayed");
         $this->setTables($tables);
@@ -470,7 +603,7 @@ class Query
      * @param mixed $columns
      * @return self
      */
-    public function select($columns = "*") : self
+    public function select($columns = "*"): self
     {
         $this->setQueryType("select");
         if (is_string($columns)) {
@@ -482,7 +615,7 @@ class Query
         return $this;
     }
 
-    public function set($column, $value = self::DEFAULT_VALUE) : self
+    public function set($column, $value = self::DEFAULT_VALUE): self
     {
         if (is_string($column)) {
             $column = trim($column);
@@ -507,7 +640,7 @@ class Query
      * @param array $values
      * @return self
      */
-    public function values($columns, $values) : self
+    public function values($columns, $values): self
     {
         if (is_string($columns)) {
             $this->values["columns"] = explode(",", $columns);
@@ -548,7 +681,7 @@ class Query
      * @param mixed $table
      * @return $this
      */
-    public function update($table) : self
+    public function update($table): self
     {
         if (empty($table)) {
             throw new QueryException("Enter table name");
@@ -558,7 +691,7 @@ class Query
         return $this;
     }
 
-    public function onDuplicateKeyUpdate($string) : self
+    public function onDuplicateKeyUpdate($string): self
     {
         $this->onDuplicateKeyUpdate = $string;
 
@@ -570,7 +703,7 @@ class Query
      * @param mixed $table
      * @return $this
      */
-    public function delete($table = null) : self
+    public function delete($table = null): self
     {
         if (!empty($table)) {
             $this->setTables($table);
@@ -585,7 +718,7 @@ class Query
      * @param string $alias
      * @return $this
      */
-    public function from($table, $alias = "") : self
+    public function from($table, $alias = ""): self
     {
         if (empty($table)) {
             throw new QueryException("Enter table name");
@@ -601,7 +734,7 @@ class Query
      * @param string $relation
      * @return $this
      */
-    public function leftJoin($table, $alias, $relation) : self
+    public function leftJoin($table, $alias, $relation): self
     {
         $this->setJoinTable("LEFT JOIN", $table, $alias, $relation);
         return $this;
@@ -614,7 +747,7 @@ class Query
      * @param string $relation
      * @return $this
      */
-    public function rightJoin($table, $alias, $relation) : self
+    public function rightJoin($table, $alias, $relation): self
     {
         $this->setJoinTable("RIGHT JOIN", $table, $alias, $relation);
         return $this;
@@ -627,7 +760,7 @@ class Query
      * @param string $relation
      * @return $this
      */
-    public function innerJoin($table, $alias, $relation) : self
+    public function innerJoin($table, $alias, $relation): self
     {
         $this->setJoinTable("INNER JOIN", $table, $alias, $relation);
         return $this;
@@ -640,30 +773,30 @@ class Query
      * @param string $relation
      * @return $this
      */
-    public function straightJoin($table, $alias, $relation) : self
+    public function straightJoin($table, $alias, $relation): self
     {
         $this->setJoinTable("STRAIGHT_JOIN", $table, $alias, $relation);
         return $this;
     }
 
-    public function where($column, $value = self::DEFAULT_VALUE, $operator = "=") : self
+    public function where($column, $value = self::DEFAULT_VALUE, $operator = "="): self
     {
         return $this->parseWhereCondition($column, $value, $operator);
     }
 
-    public function having($string) : self
+    public function having($string): self
     {
         $this->havingConditions = [];
         $this->havingConditions[] = array("operator" => "", "condition" => $string);
         return $this;
     }
 
-    public function andWhere($column, $value = self::DEFAULT_VALUE, $operator = "=") : self
+    public function andWhere($column, $value = self::DEFAULT_VALUE, $operator = "="): self
     {
         return $this->parseWhereCondition($column, $value, $operator, "AND");
     }
 
-    public function orWhere($column, $value = self::DEFAULT_VALUE, $operator = "=") : self
+    public function orWhere($column, $value = self::DEFAULT_VALUE, $operator = "="): self
     {
         return $this->parseWhereCondition($column, $value, $operator, "OR");
     }
@@ -673,7 +806,7 @@ class Query
      * @param mixed $columns
      * @return $this
      */
-    public function groupBy($columns) : self
+    public function groupBy($columns): self
     {
         if (is_string($columns)) {
             $arrayColumns = explode(",", $columns);
@@ -689,7 +822,7 @@ class Query
      * @param mixed $columns
      * @return $this
      */
-    public function orderBy($columns) : self
+    public function orderBy($columns): self
     {
         if (is_string($columns)) {
             $arrayColumns = explode(",", $columns);
@@ -727,7 +860,7 @@ class Query
      * @param string $string
      * @return $this
      */
-    public function limit(string $string) : self
+    public function limit(string $string): self
     {
         $this->limit = $string;
         return $this;
@@ -739,7 +872,7 @@ class Query
      * @param int $itemsPerPage
      * @return $this
      */
-    public function paginationLimit(int $page = 1, int $itemsPerPage = 10) : self
+    public function paginationLimit(int $page = 1, int $itemsPerPage = 10): self
     {
         $offset = ($page - 1) * $itemsPerPage;
         $this->limit("$offset, $itemsPerPage");
@@ -751,14 +884,14 @@ class Query
      * @param string $query
      * @return $this
      */
-    public function setQueryString(string $query) : self
+    public function setQueryString(string $query): self
     {
         $this->plainQueryString = $query;
 
         return $this;
     }
 
-    public function getQueryString(bool $replaceParameters = false) : string
+    public function getQueryString(bool $replaceParameters = false): string
     {
         if ($this->plainQueryString !== null) {
             $queryString = $this->plainQueryString;
@@ -921,7 +1054,6 @@ class Query
                         $queryString .= "GROUP BY " . implode(",", $this->groupByColumns) . " ";
                     }
 
-
                     /**
                      * HAVING CONDITIONS
                      */
@@ -962,7 +1094,6 @@ class Query
                         }
                         $queryString .= "UNION " . $value['type'] . " " . $value['query'] . " ";
                     }
-
 
                     break;
                 case "update":
@@ -1113,7 +1244,7 @@ class Query
 
     public static function getDatabaseTables()
     {
-        $query = new self($this->config);
+        $query = new self(self::$config);
         $query->select([
             "table_name AS `name`",
             "table_schema AS `schema`",
@@ -1136,6 +1267,23 @@ class Query
     }
 
     /**
+     * Enable result query cache
+     *
+     * @param boolean $bool
+     * @param integer $lifeTime
+     * @param string|null $key
+     * @return self
+     */
+    public function useResultCache(bool $bool = true, int $lifeTime = 300, ?string $key = null): self
+    {
+        $this->useResultCache = $bool;
+        $this->resultCacheLifeTime = $lifeTime;
+        $this->resultCacheKey = $key;
+
+        return $this;
+    }
+
+    /**
      *
      * @param mixed $column
      * @param mixed $value
@@ -1143,7 +1291,7 @@ class Query
      * @param string $whereOperator
      * @return self
      */
-    private function parseWhereCondition($column, $value, string $operator = "", $whereOperator = null) : self
+    private function parseWhereCondition($column, $value, string $operator = "", $whereOperator = null): self
     {
         $condition = "";
         if ($value === self::DEFAULT_VALUE) {
@@ -1193,7 +1341,7 @@ class Query
      * @param string $type
      * @return self
      */
-    private function setQueryType(string $type) : self
+    private function setQueryType(string $type): self
     {
         $this->query['type'] = $type;
 
@@ -1204,7 +1352,7 @@ class Query
      *
      * @return string
      */
-    private function getQueryType() : string
+    private function getQueryType(): string
     {
 
         return $this->query['type'];
@@ -1215,7 +1363,7 @@ class Query
      * @param mixed $table
      * @return self
      */
-    private function setTables($table, $alias = "") : self
+    private function setTables($table, $alias = ""): self
     {
         if ($table instanceof self) {
             /* @var $table Query */
@@ -1233,7 +1381,7 @@ class Query
      * @param mixed $table
      * @return $this
      */
-    private function setJoinTable($type, $table, $alias = null, $relation = null) : self
+    private function setJoinTable($type, $table, $alias = null, $relation = null): self
     {
         if ($table instanceof self) {
             $this->subQueries[] = $table;
@@ -1253,7 +1401,7 @@ class Query
      * @param bool $bindToQuery
      * @return string
      */
-    private function generateParameterName($value, bool $bindToQuery = true) : string
+    private function generateParameterName($value, bool $bindToQuery = true): string
     {
         $name = sha1(uniqid("param", true) . sha1($value));
         if ($bindToQuery) {
@@ -1267,7 +1415,7 @@ class Query
      * @param string $string
      * @return string
      */
-    private function escapeString(string $string) : string
+    private function escapeString(string $string): string
     {
         if (!strstr($string, ".") &&
             !strstr($string, "`") &&

@@ -167,18 +167,18 @@ class Curl
 
     /**
      * Get proxy ip
-     * @return string
+     * @return string|null
      */
-    public function getProxy(): self
+    public function getProxy(): ?string
     {
         return $this->proxy;
     }
 
     /**
      * The maximum number of seconds to allow cURL functions to execute.
-     * @return int
+     * @return int|null
      */
-    public function getTimeout(): int
+    public function getTimeout(): ?int
     {
         return $this->timeout;
     }

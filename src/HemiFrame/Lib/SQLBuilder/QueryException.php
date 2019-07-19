@@ -2,6 +2,7 @@
 
 namespace HemiFrame\Lib\SQLBuilder;
 
-class QueryException extends \Exception {
-    
+class QueryException extends \Exception
+{
+
 }

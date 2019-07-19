@@ -6,7 +6,8 @@
 
 namespace HemiFrame\Interfaces;
 
-interface Cache {
+interface Cache
+{
 
     public function getKeyPrefix(): string;
 
