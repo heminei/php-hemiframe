@@ -428,7 +428,7 @@ class Query
         }
 
         $data = $this->execute()->fetchAll(\PDO::FETCH_OBJ);
-        if ($data === false) {
+        if (!is_array($data)) {
             $data = [];
         }
 
@@ -457,6 +457,9 @@ class Query
         }
 
         $data = $this->execute()->fetchObject();
+        if (!is_object($data) && $data !== null) {
+            $data = null;
+        }
 
         if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
             $this->resultCacheImplementation->set($cacheKey, $data, $this->resultCacheLifeTime);
@@ -483,7 +486,7 @@ class Query
         }
 
         $data = $this->execute()->fetchAll(\PDO::FETCH_ASSOC);
-        if ($data === false) {
+        if (!is_array($data)) {
             $data = [];
         }
 
@@ -513,7 +516,7 @@ class Query
         }
 
         $data = $this->execute()->fetchAll(\PDO::FETCH_COLUMN);
-        if ($data === false) {
+        if (!is_array($data)) {
             $data = [];
         }
 
@@ -542,10 +545,10 @@ class Query
         }
 
         $data = $this->execute()->fetch(\PDO::FETCH_ASSOC);
-        if ($data === false) {
+        if (!is_array($data) && $data !== null) {
             $data = null;
         }
-
+        
         if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
             $this->resultCacheImplementation->set($cacheKey, $data, $this->resultCacheLifeTime);
         }
@@ -1417,7 +1420,8 @@ class Query
      */
     private function escapeString(string $string): string
     {
-        if (!strstr($string, ".") &&
+        if (
+            !strstr($string, ".") &&
             !strstr($string, "`") &&
             !strstr($string, "<") &&
             !strstr($string, ",") &&
@@ -1425,10 +1429,10 @@ class Query
             !strstr($string, "=") &&
             !strstr($string, " IN ") &&
             !strstr($string, " NOT IN ") &&
-            !strstr($string, "!=")) {
+            !strstr($string, "!=")
+        ) {
             $string = "`" . $string . "`";
         }
         return $string;
     }
-
 }
