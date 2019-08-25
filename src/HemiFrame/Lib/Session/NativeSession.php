@@ -8,18 +8,16 @@ namespace HemiFrame\Lib\Session;
 class NativeSession implements \HemiFrame\Interfaces\Session
 {
 
-    private $name = null;
+    private $name = "PHPSESSID";
     private $lifeTime = 3600;
     private $cookiePath = "/";
     private $cookieDomain = "";
     private $cookieSecure = false;
     private $cookieHttpOnly = true;
 
-    public function __construct($sessionName = null)
+    public function __construct($sessionName = "PHPSESSID")
     {
-        if (strlen($sessionName) > 1) {
-            $this->setName($sessionName);
-        }
+        $this->setName($sessionName);
     }
 
     public function __get(string $name)
@@ -36,9 +34,9 @@ class NativeSession implements \HemiFrame\Interfaces\Session
     {
         if (isset($_SESSION[$name])) {
             return $_SESSION[$name];
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     public function set(string $name, $value): self
@@ -50,11 +48,15 @@ class NativeSession implements \HemiFrame\Interfaces\Session
 
     public function start()
     {
-        if ($this->getName() != null) {
-            session_name($this->getName());
-        }
-        session_set_cookie_params($this->getLifeTime(), $this->getCookiePath(), $this->getCookieDomain()
-            , $this->getCookieSecure(), $this->getCookieHttpOnly());
+        session_name($this->getName());
+        ini_set("session.gc_maxlifetime", (string) $this->getLifeTime());
+        session_set_cookie_params(
+            $this->getLifeTime(),
+            $this->getCookiePath(),
+            $this->getCookieDomain(),
+            $this->getCookieSecure(),
+            $this->getCookieHttpOnly()
+        );
         session_start();
     }
 
@@ -105,6 +107,9 @@ class NativeSession implements \HemiFrame\Interfaces\Session
 
     public function setName(string $name): self
     {
+        if (empty($name)) {
+            throw new \RuntimeException("Session name can't be empty string");
+        }
         $this->name = $name;
 
         return $this;
@@ -144,5 +149,4 @@ class NativeSession implements \HemiFrame\Interfaces\Session
 
         return $this;
     }
-
 }
