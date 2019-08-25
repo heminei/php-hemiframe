@@ -5,23 +5,27 @@ namespace HemiFrame\Lib;
 /**
  * @author heminei <heminei@heminei.com>
  */
-class Validation {
+class Validation
+{
 
     private $data;
 
-    public function __construct($string = null) {
+    public function __construct($string = null)
+    {
         if ($string !== null) {
-            $this->setString($string);
+            $this->setData($string);
         }
     }
 
-    public function setData($data) {
+    public function setData($data)
+    {
         $this->data = $data;
 
         return $this;
     }
 
-    public function getData() {
+    public function getData()
+    {
         return $this->data;
     }
 
@@ -29,7 +33,8 @@ class Validation {
      *
      * @return boolean
      */
-    public function isNumber(): bool {
+    public function isNumber(): bool
+    {
         if (is_numeric($this->data)) {
             return true;
         } else {
@@ -41,7 +46,8 @@ class Validation {
      *
      * @return boolean
      */
-    public function isCyrillic(): bool {
+    public function isCyrillic(): bool
+    {
         $pattern = "/^[\p{Cyrillic}0-9_.\s\-]+$/u";
         if (preg_match($pattern, $this->data)) {
             return true;
@@ -54,7 +60,8 @@ class Validation {
      *
      * @return boolean
      */
-    public function isCyrillicLettersOnly(): bool {
+    public function isCyrillicLettersOnly(): bool
+    {
         $pattern = "/^[\p{Cyrillic}\s]+$/u";
         if (preg_match($pattern, $this->data)) {
             return true;
@@ -67,7 +74,8 @@ class Validation {
      *
      * @return boolean
      */
-    public function isLatin(): bool {
+    public function isLatin(): bool
+    {
         $pattern = "/^[a-zA-Z0-9_.\s\-]+$/u";
         if (preg_match($pattern, $this->data)) {
             return true;
@@ -80,7 +88,8 @@ class Validation {
      *
      * @return boolean
      */
-    public function isLatinLettersOnly(): bool {
+    public function hasLatinLettersOnly(): bool
+    {
         $pattern = "/^[a-zA-Z\s]+$/u";
         if (preg_match($pattern, $this->data)) {
             return true;
@@ -93,7 +102,8 @@ class Validation {
      *
      * @return boolean
      */
-    public function isEmail(bool $validateMxRecords = false): bool {
+    public function isEmail(bool $validateMxRecords = false): bool
+    {
         if (!filter_var($this->data, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
@@ -110,7 +120,8 @@ class Validation {
      *
      * @return boolean
      */
-    public function isIp(): bool {
+    public function isIp(): bool
+    {
         if (filter_var($this->data, FILTER_VALIDATE_IP)) {
             return true;
         } else {
@@ -122,7 +133,8 @@ class Validation {
      *
      * @return boolean
      */
-    public function isUrl(): bool {
+    public function isUrl(): bool
+    {
         if (filter_var($this->data, FILTER_VALIDATE_URL)) {
             return true;
         } else {
@@ -134,7 +146,8 @@ class Validation {
      *
      * @return boolean
      */
-    public function isSpaces(): bool {
+    public function hasSpaces(): bool
+    {
         if (preg_match("/\\s/", $this->data)) {
             return true;
         } else {
@@ -146,12 +159,12 @@ class Validation {
      *
      * @return boolean
      */
-    public function isSpecialSymbols(): bool {
+    public function hasSpecialSymbols(): bool
+    {
         if (preg_match('/[\'\/~`\!@#\$%\^&\*\(\)\+=\{\}\[\]\|;:"\<\>,\?\\\]/', $this->data)) {
             return true;
         } else {
             return false;
         }
     }
-
 }
