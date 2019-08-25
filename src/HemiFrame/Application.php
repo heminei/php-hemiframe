@@ -13,10 +13,16 @@ class Application
 
     private $mode = self::MODE_PROD;
     private $rootDir = "";
+    /**
+     * @var \HemiFrame\Interfaces\DependencyInjection\Container
+     */
     private $container;
+    /**
+     * @var \HemiFrame\Lib\Router
+     */
     private $router;
 
-    public function __construct(Interfaces\DependencyInjection\Container $container, \HemiFrame\Lib\Router $router)
+    public function __construct(\HemiFrame\Interfaces\DependencyInjection\Container $container, \HemiFrame\Lib\Router $router)
     {
         $this->container = $container;
         $this->router = $router;
@@ -59,10 +65,19 @@ class Application
         return $this;
     }
 
-    public function run()
+    public function run(): array
     {
         $route = $this->router->match();
         return $route;
     }
 
+
+    /**
+     * Get the value of container
+     * @return \HemiFrame\Interfaces\DependencyInjection\Container
+     */
+    public function getContainer()
+    {
+        return $this->container;
+    }
 }
