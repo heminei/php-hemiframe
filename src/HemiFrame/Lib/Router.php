@@ -5,7 +5,8 @@ namespace HemiFrame\Lib;
 /**
  * @author heminei <heminei@heminei.com>
  */
-class Router {
+class Router
+{
 
     private $requestUri = "";
     private $currentRoute = [];
@@ -25,7 +26,8 @@ class Router {
         "vars" => "/\{\{(?<name>[a-zA-Z0-9]+)\}\}/i"
     ];
 
-    public function __construct() {
+    public function __construct()
+    {
         if (isset($_SERVER['HTTP_HOST'])) {
             $this->host = $_SERVER['HTTP_HOST'];
         }
@@ -33,11 +35,13 @@ class Router {
         $this->resetCurrentRoute();
     }
 
-    public function getRequestUri(): string {
+    public function getRequestUri(): string
+    {
         return $this->requestUri;
     }
 
-    public function setRequestUri(string $requestUri): self {
+    public function setRequestUri(string $requestUri): self
+    {
         $requestUri = explode("?", $requestUri);
         $requestUri = $requestUri[0];
         $requestUri = urldecode($requestUri);
@@ -47,53 +51,64 @@ class Router {
         return $this;
     }
 
-    public function getBasePath() {
+    public function getBasePath()
+    {
         return $this->basePath;
     }
 
-    public function setBasePath(string $basePath): self {
+    public function setBasePath(string $basePath): self
+    {
         $this->basePath = $basePath;
 
         return $this;
     }
 
-    public function setHost(string $host): self {
+    public function setHost(string $host): self
+    {
         $this->host = $host;
 
         return $this;
     }
 
-    public function getHost(): string {
+    public function getHost(): string
+    {
         return $this->host;
     }
 
-    public function getDefaultClass() {
+    public function getDefaultClass()
+    {
         return $this->defaultClass;
     }
 
-    public function getDefaultMethod() {
+    public function getDefaultMethod()
+    {
         return $this->defaultMethod;
     }
 
-    public function setDefaultClass($defaultClass) {
+    public function setDefaultClass($defaultClass)
+    {
         $this->defaultClass = $defaultClass;
     }
 
-    public function setDefaultMethod($defaultMethod) {
+    public function setDefaultMethod($defaultMethod)
+    {
         $this->defaultMethod = $defaultMethod;
     }
 
-    public function getLang(): string {
+    public function getLang(): string
+    {
         return $this->lang;
     }
 
-    public function setLang(string $lang): self {
+    public function setLang(string $lang): self
+    {
         $this->lang = $lang;
 
         return $this;
     }
 
-    public function getCurrentRoute(): array {
+    public function getCurrentRoute(): array
+    {
         return $this->currentRoute;
     }
 
@@ -103,7 +118,8 @@ class Router {
      * @return \self
      * @throws \InvalidArgumentException
      */
-    public function setRoute(array $array): self {
+    public function setRoute(array $array): self
+    {
         if (!isset($array['key'])) {
             throw new \InvalidArgumentException("Enter key");
         }
@@ -145,7 +161,7 @@ class Router {
         $find = "/\{\{(?<name>[a-zA-Z0-9]+)\}\}/i";
         $vars = null;
         preg_match_all($find, $url, $vars);
-        foreach ($vars['name'] AS $row) {
+        foreach ($vars['name'] as $row) {
             $this->urlVars[$key][] = $row;
         }
 
@@ -153,11 +169,11 @@ class Router {
     }
 
     /**
-     *
-     * @param type $array
+     * @param string|array $array
      * @return string
      */
-    public function getRoute($array): string {
+    public function getRoute($array): string
+    {
         $vars = null;
         if (is_array($array)) {
             $key = $array['key'];
@@ -208,7 +224,8 @@ class Router {
         return $this->getBasePath() . $urlString;
     }
 
-    public function setRedirect(array $array): self {
+    public function setRedirect(array $array): self
+    {
         if (!isset($array['statusCode'])) {
             $array['statusCode'] = 301;
         }
@@ -231,7 +248,7 @@ class Router {
         $vars = [];
         $varNames = [];
         preg_match_all($this->patterns['vars'], $array['fromUrl'], $vars);
-        foreach ($vars['name'] AS $row) {
+        foreach ($vars['name'] as $row) {
             $varNames[] = $row;
         }
         $this->urlRedirects[] = [
@@ -249,7 +266,8 @@ class Router {
      *
      * @return array
      */
-    public function match(): array {
+    public function match(): array
+    {
         $this->resetCurrentRoute();
 
         $url = $this->getRequestUri();
@@ -341,14 +359,16 @@ class Router {
         return $this->currentRoute;
     }
 
-    private function replaceVars(array $vars, string $string) {
+    private function replaceVars(array $vars, string $string)
+    {
         foreach ($vars as $k => $v) {
             $string = str_replace("{{" . $k . "}}", $v, $string);
         }
         return $string;
     }
 
-    private function resetCurrentRoute() {
+    private function resetCurrentRoute()
+    {
         $this->currentRoute = [
             "key" => null,
             "class" => null,
@@ -359,5 +379,4 @@ class Router {
 
         return $this;
     }
-
 }
