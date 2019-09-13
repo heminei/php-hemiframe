@@ -1,11 +1,13 @@
 {
     "name": "hemiframe/hemiframe",
     "description": "PHP micro framework",
-    "version": "2.2.5",
+    "version": "2.2.6",
     "keywords": [
         "PHP",
         "framework",
-        "micro"
+        "micro",
+        "Dependency Injection",
+        "Routing"
     ],
     "license": "MIT",
     "authors": [{

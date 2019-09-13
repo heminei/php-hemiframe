@@ -137,15 +137,19 @@ class Template
     /**
      *
      * @param string $id Loop ID
-     * @param array $array Result Array
+     * @param array|Traversable $array Result Array
      * @param object|null $instance Object
      * @param string|\Closure|null $method Method
      */
-    public function setLoop(string $id, array $array, $instance = null, $method = null): self
+    public function setLoop(string $id, $array, $instance = null, $method = null): self
     {
         $this->clearTagMarker();
         if ($method == null) {
             $method = $id;
+        }
+
+        if (!is_array($array) && !$array instanceof \Traversable) {
+            throw new \InvalidArgumentException("Invalid array parameter");
         }
 
         do {
@@ -316,5 +320,4 @@ class Template
         }
         return $subject;
     }
-
 }
