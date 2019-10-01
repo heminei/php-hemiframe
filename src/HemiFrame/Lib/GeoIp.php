@@ -5,7 +5,8 @@ namespace HemiFrame\Lib;
 /**
  * @author heminei <heminei@heminei.com>
  */
-class GeoIp {
+class GeoIp
+{
 
 	private $ip;
 	private $databaseInfo;
@@ -22,7 +23,8 @@ class GeoIp {
 	private $areaCode;
 	private $timeZone = NULL;
 
-	public function __construct($ip = NULL) {
+	public function __construct($ip = NULL)
+	{
 		if (empty($ip)) {
 			throw new \Exception("Enter ip.");
 		}
@@ -52,60 +54,73 @@ class GeoIp {
 		}
 	}
 
-	public function getIp(): string {
+	public function getIp(): ?string
+	{
 		return $this->ip;
 	}
 
-	public function getDatabaseInfo(): string {
+	public function getDatabaseInfo(): ?string
+	{
 		return $this->databaseInfo;
 	}
 
-	public function getContinentCode(): string {
+	public function getContinentCode(): ?string
+	{
 		return $this->continentCode;
 	}
 
-	public function getCountryCode(): string {
+	public function getCountryCode(): ?string
+	{
 		return $this->countryCode;
 	}
 
-	public function getCountryCode3(): string {
+	public function getCountryCode3(): ?string
+	{
 		return $this->countryCode3;
 	}
 
-	public function getCountryName(): string {
+	public function getCountryName(): ?string
+	{
 		return $this->countryName;
 	}
 
-	public function getRegion(): string {
+	public function getRegion(): ?string
+	{
 		return $this->region;
 	}
 
-	public function getCity(): string {
+	public function getCity(): ?string
+	{
 		return $this->city;
 	}
 
-	public function getPostalCode(): string {
+	public function getPostalCode(): ?string
+	{
 		return $this->postalCode;
 	}
 
-	public function getLatitude(): float {
+	public function getLatitude(): float
+	{
 		return $this->latitude;
 	}
 
-	public function getLongitude(): float {
+	public function getLongitude(): float
+	{
 		return $this->longitude;
 	}
 
-	public function getDmaCode() {
+	public function getDmaCode()
+	{
 		return $this->dmaCode;
 	}
 
-	public function getAreaCode() {
+	public function getAreaCode()
+	{
 		return $this->areaCode;
 	}
 
-	public function getTimeZone() {
+	public function getTimeZone()
+	{
 		return $this->timeZone;
 	}
-
 }
