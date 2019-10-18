@@ -420,10 +420,14 @@ class Query
             $cacheKey = $this->resultCacheKey;
             if (empty($cacheKey)) {
                 $cacheKey = $this->getQueryString(true);
+                $cacheKey = __METHOD__ . "-" . $cacheKey;
             }
-            $cacheKey = __METHOD__ . "-" . $cacheKey;
             if ($this->resultCacheImplementation->exists($cacheKey)) {
-                return $this->resultCacheImplementation->get($cacheKey);
+                $data = $this->resultCacheImplementation->get($cacheKey);
+                if (!is_array($data)) {
+                    $data = [];
+                }
+                return $data;
             }
         }
 
@@ -449,10 +453,14 @@ class Query
             $cacheKey = $this->resultCacheKey;
             if (empty($cacheKey)) {
                 $cacheKey = $this->getQueryString(true);
+                $cacheKey = __METHOD__ . "-" . $cacheKey;
             }
-            $cacheKey = __METHOD__ . "-" . $cacheKey;
             if ($this->resultCacheImplementation->exists($cacheKey)) {
-                return $this->resultCacheImplementation->get($cacheKey);
+                $data = $this->resultCacheImplementation->get($cacheKey);
+                if (!is_object($data) && $data !== null) {
+                    $data = null;
+                }
+                return $data;
             }
         }
 
@@ -478,10 +486,14 @@ class Query
             $cacheKey = $this->resultCacheKey;
             if (empty($cacheKey)) {
                 $cacheKey = $this->getQueryString(true);
+                $cacheKey = __METHOD__ . "-" . $cacheKey;
             }
-            $cacheKey = __METHOD__ . "-" . $cacheKey;
             if ($this->resultCacheImplementation->exists($cacheKey)) {
-                return $this->resultCacheImplementation->get($cacheKey);
+                $data = $this->resultCacheImplementation->get($cacheKey);
+                if (!is_array($data)) {
+                    $data = [];
+                }
+                return $data;
             }
         }
 
@@ -508,10 +520,14 @@ class Query
             $cacheKey = $this->resultCacheKey;
             if (empty($cacheKey)) {
                 $cacheKey = $this->getQueryString(true);
+                $cacheKey = __METHOD__ . "-" . $cacheKey;
             }
-            $cacheKey = __METHOD__ . "-" . $cacheKey;
             if ($this->resultCacheImplementation->exists($cacheKey)) {
-                return $this->resultCacheImplementation->get($cacheKey);
+                $data = $this->resultCacheImplementation->get($cacheKey);
+                if (!is_array($data)) {
+                    $data = [];
+                }
+                return $data;
             }
         }
 
@@ -537,10 +553,14 @@ class Query
             $cacheKey = $this->resultCacheKey;
             if (empty($cacheKey)) {
                 $cacheKey = $this->getQueryString(true);
+                $cacheKey = __METHOD__ . "-" . $cacheKey;
             }
-            $cacheKey = __METHOD__ . "-" . $cacheKey;
             if ($this->resultCacheImplementation->exists($cacheKey)) {
-                return $this->resultCacheImplementation->get($cacheKey);
+                $data = $this->resultCacheImplementation->get($cacheKey);
+                if (!is_array($data) && $data !== null) {
+                    $data = null;
+                }
+                return $data;
             }
         }
 
@@ -548,7 +568,7 @@ class Query
         if (!is_array($data) && $data !== null) {
             $data = null;
         }
-        
+
         if ($this->useResultCache == true && $this->resultCacheLifeTime > 0) {
             $this->resultCacheImplementation->set($cacheKey, $data, $this->resultCacheLifeTime);
         }
