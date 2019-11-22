@@ -1447,6 +1447,8 @@ class Query
             !strstr($string, ",") &&
             !strstr($string, ">") &&
             !strstr($string, "=") &&
+            !strstr($string, "(") &&
+            !strstr($string, ")") &&
             !strstr($string, " IN ") &&
             !strstr($string, " NOT IN ") &&
             !strstr($string, "!=")
