@@ -22,8 +22,13 @@ class Router
     private $urlHosts = [];
     private $urlLangs = [];
     private $urlRedirects = [];
+    private $cache = null;
+    /**
+     * @var array
+     */
     private $patterns = [
-        "vars" => "/\{\{(?<name>[a-zA-Z0-9]+)\}\}/i"
+        "vars" => "/\{\{(?<name>[a-zA-Z0-9]+)\}\}/i",
+        "lang" => "(?<lang>[a-z0-9]{1,2})?",
     ];
 
     public function __construct()
@@ -113,6 +118,179 @@ class Router
     }
 
     /**
+     * Get regex patterns
+     * @return array
+     */
+    public function getPatterns(): array
+    {
+        return $this->patterns;
+    }
+
+    public function setPattern(string $key, string $value): self
+    {
+        if (!array_key_exists($key, $this->patterns)) {
+            throw new \InvalidArgumentException("Invalid pattern key: " . $key);
+        }
+
+        $this->patterns[$key] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return \HemiFrame\Interfaces\Cache|null
+     */
+    public function getCache(): ?\HemiFrame\Interfaces\Cache
+    {
+        return $this->cache;
+    }
+
+    /**
+     * @param \HemiFrame\Interfaces\Cache|null $cache
+     * @return self
+     */
+    public function setCache(?\HemiFrame\Interfaces\Cache $cache): self
+    {
+        $this->cache = $cache;
+
+        return $this;
+    }
+
+    /**
+     * @param string $path
+     * @param integer $cacheTime
+     * @param string"null $cacheKey
+     * @return array
+     */
+    public function scanDirectory(string $path, int $cacheTime = 300, ?string $cacheKey = null): array
+    {
+        if (!is_readable($path)) {
+            throw new \InvalidArgumentException("Patch is not readable: " . $path);
+        }
+        if ($cacheKey === null) {
+            $cacheKey = "router-directory-scan-" . md5($path . __FILE__);
+        }
+        $isCached = false;
+        $routes = [];
+        if (!empty($this->cache) && $cacheTime > 0) {
+            if ($this->cache->exists($cacheKey) && !empty($this->cache->get($cacheKey))) {
+                $isCached = true;
+                $routes = $this->cache->get($cacheKey);
+            }
+        }
+
+        if ($isCached == false) {
+            $allFiles = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+            $files = new \RegexIterator($allFiles, '/\.php$/');
+
+            $classes = [];
+            foreach ($files as $file) {
+                /** @var \SplFileInfo $file */
+                $tokens = token_get_all(file_get_contents($file->getRealPath()));
+                $namespace = "\\";
+
+                foreach ($tokens as $key => $token) {
+                    if (T_NAMESPACE === $token[0]) {
+                        $index = $key + 2; // Skip namespace keyword and whitespace
+                        while (isset($tokens[$index]) && is_array($tokens[$index])) {
+                            $namespace .= $tokens[$index++][1];
+                        }
+                    }
+                    if (T_CLASS === $tokens[$key][0] && T_WHITESPACE === $tokens[$key + 1][0] && T_STRING === $tokens[$key + 2][0]) {
+                        $classes[] = $namespace . '\\' . $tokens[$key + 2][1];
+                    }
+                }
+            }
+
+            foreach ($classes as $class) {
+                $annotations = [];
+                $rc = new \ReflectionClass($class);
+                if (!empty($rc->getDocComment())) {
+                    $annotations[] = [
+                        "comment" => $rc->getDocComment(),
+                        "method" => null,
+                    ];
+                }
+                foreach ($rc->getMethods() as $method) {
+                    if (!empty($method->getDocComment())) {
+                        $annotations[] = [
+                            "comment" => $method->getDocComment(),
+                            "method" => $method->getName(),
+                        ];
+                    }
+                }
+
+                foreach ($annotations as $annotation) {
+                    $lines = explode("\n", $annotation['comment']);
+                    foreach ($lines as $line) {
+                        if (strstr($line, "@Route({")) {
+                            $stringArray = explode("@Route({", $line);
+                            $json = trim("{" . $stringArray[1]);
+                            $json = rtrim($json, "})") . "}";
+
+                            $array = json_decode($json, true);
+                            $jsonError = \json_last_error_msg();
+
+                            if ($jsonError != "No error" || !is_array($array)) {
+                                throw new \RuntimeException("Invalid @Route annotation on class " . $class . ": " . $json);
+                            }
+
+                            if (!isset($array['controller'])) {
+                                $array['controller'] = $class;
+                            }
+                            if (!isset($array['method']) && isset($annotation['method'])) {
+                                $array['method'] = $annotation['method'];
+                            }
+                            if (!isset($array['key'])) {
+                                throw new \InvalidArgumentException("Enter @Route key annotation on class " . $class . ": " . $json);
+                            }
+                            if (!isset($array['url'])) {
+                                throw new \InvalidArgumentException("Enter @Route url annotation on class " . $class . ": " . $json);
+                            }
+
+                            $routes[] = [
+                                "class" => $class,
+                                "settings" => $array,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($routes as $route) {
+            $this->setRoute($route['settings']);
+        }
+
+        if (!empty($this->cache) && $cacheTime > 0) {
+            $this->cache->set($cacheKey, $routes, $cacheTime);
+        }
+
+        return $routes;
+    }
+
+    /**
+     * @param string $path
+     * @param string|null $cacheKey
+     * @return boolean
+     */
+    public function clearScanDirectoryCache(string $path, ?string $cacheKey = null): bool
+    {
+        if (!is_readable($path)) {
+            throw new \InvalidArgumentException("Path is not readable: " . $path);
+        }
+        if (empty($this->cache)) {
+            return false;
+        }
+
+        if ($cacheKey === null) {
+            $cacheKey = "router-directory-scan-" . md5($path . __FILE__);
+        }
+
+        return  $this->cache->delete($cacheKey);
+    }
+
+    /**
      *
      * @param array $array
      * @return \self
@@ -124,7 +302,7 @@ class Router
             throw new \InvalidArgumentException("Enter key");
         }
         if (!isset($array['url'])) {
-            throw new \InvalidArgumentException("Enter URL");
+            throw new \InvalidArgumentException("Enter url");
         }
         if (!isset($array['controller'])) {
             throw new \InvalidArgumentException("Enter controller");
@@ -287,51 +465,50 @@ class Router
         }
 
         foreach ($this->urlArray as $key => $urlPreg) {
-            $urlPreg = preg_replace("/\{\{(.*?)\}\}/i", "([a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s\%\+]+)", $urlPreg);
+            $urlPreg = preg_replace("/\{\{(.*?)\}\}/i", "(?<$1>[a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s\%\+]+)", $urlPreg);
             $urlPreg = str_replace("/", "\/", $urlPreg);
 
-            $find = "/^\/?([a-z0-9]{1,3})?$urlPreg\/?$/i";
             $matches = [];
-            if (preg_match($find, $url, $matches)) {
-                if ($this->urlHosts[$key] == $this->host) {
-                    $this->currentRoute["key"] = $key;
+            if (!preg_match("/^\/?" . $this->patterns['lang'] . "$urlPreg\/?$/i", $url, $matches)) {
+                continue;
+            }
+            if ($this->urlHosts[$key] != $this->host) {
+                continue;
+            }
 
-                    if (isset($matches[1])) {
-                        $this->currentRoute["lang"] = $matches[1];
-                    }
-                    if (isset($this->urlVars[$key])) {
-                        if (is_array($this->urlVars[$key])) {
-                            $this->currentRoute["vars"] = [];
-                            foreach ($this->urlVars[$key] as $varKey => $var) {
-                                $this->currentRoute["vars"][$var] = $matches[$varKey + 2];
-                            }
-                        }
-                    }
-                    if (isset($this->urlMethods[$key])) {
-                        $this->currentRoute["method"] = $this->replaceVars($this->currentRoute["vars"], $this->urlMethods[$key]);
-                    } else {
-                        $this->currentRoute["method"] = null;
-                    }
+            $this->currentRoute["key"] = $key;
 
-                    $this->currentRoute["class"] = $this->urlControllers[$key];
-                    break;
+            if (isset($matches['lang'])) {
+                $this->currentRoute["lang"] = $matches['lang'];
+            }
+            if (isset($this->urlVars[$key]) && is_array($this->urlVars[$key])) {
+                $this->currentRoute["vars"] = [];
+                foreach ($this->urlVars[$key] as $varKey => $var) {
+                    $this->currentRoute["vars"][$var] = isset($matches[$var]) ? $matches[$var] : null;
                 }
             }
+
+            $this->currentRoute["method"] = null;
+            if (isset($this->urlMethods[$key])) {
+                $this->currentRoute["method"] = $this->replaceVars($this->currentRoute["vars"], $this->urlMethods[$key]);
+            }
+
+            $this->currentRoute["class"] = $this->urlControllers[$key];
+            break;
         }
 
         if ($this->currentRoute["class"] === NULL && $this->currentRoute["method"] === NULL) {
-            foreach ($this->urlRedirects as $redirectKey => $redirect) {
+            foreach ($this->urlRedirects as $redirect) {
                 $urlPreg = preg_replace("/\{\{(.*?)\}\}/i", "([a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s]+)", $redirect['fromUrl']);
                 $urlPreg = str_replace("/", "\/", $urlPreg);
 
-                $find = "/^\/?([a-z0-9]{1,3})?$urlPreg\/?$/i";
                 $matches = [];
-                if (preg_match($find, $url, $matches)) {
+                if (preg_match("/^\/?" . $this->patterns['lang'] . "$urlPreg\/?$/i", $url, $matches)) {
 
                     if ($redirect['toUrl'] != NULL) {
                         $redirectToUrl = $redirect['toUrl'];
                     } else {
-                        $redirectToUrl = $this->getUrl($redirect['toUrlKey']);
+                        $redirectToUrl = $this->getRoute($redirect['toUrlKey']);
                     }
                     foreach ($redirect['vars'] as $varKey => $var) {
                         $redirectToUrl = str_replace("{{" . $var . "}}", $matches[$varKey + 2], $redirectToUrl);
