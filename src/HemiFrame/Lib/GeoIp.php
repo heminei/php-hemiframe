@@ -37,17 +37,19 @@ class GeoIp
 
 		$record = \geoip_record_by_name($ip);
 
-		$this->continentCode = $record['continent_code'];
-		$this->countryCode = $record['country_code'];
-		$this->countryCode3 = $record['country_code3'];
-		$this->countryName = $record['country_name'];
-		$this->region = $record['region'];
-		$this->city = $record['city'];
-		$this->postalCode = $record['postal_code'];
-		$this->latitude = $record['latitude'];
-		$this->longitude = $record['longitude'];
-		$this->dmaCode = $record['dma_code'];
-		$this->areaCode = $record['area_code'];
+		if (is_array($record)) {
+			$this->continentCode = $record['continent_code'];
+			$this->countryCode = $record['country_code'];
+			$this->countryCode3 = $record['country_code3'];
+			$this->countryName = $record['country_name'];
+			$this->region = $record['region'];
+			$this->city = $record['city'];
+			$this->postalCode = $record['postal_code'];
+			$this->latitude = $record['latitude'];
+			$this->longitude = $record['longitude'];
+			$this->dmaCode = $record['dma_code'];
+			$this->areaCode = $record['area_code'];
+		}
 
 		if (!empty($this->getCountryCode())) {
 			$this->timeZone = \geoip_time_zone_by_country_and_region($this->getCountryCode());
