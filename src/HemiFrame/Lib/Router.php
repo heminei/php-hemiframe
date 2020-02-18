@@ -465,7 +465,7 @@ class Router
         }
 
         foreach ($this->urlArray as $key => $urlPreg) {
-            $urlPreg = preg_replace("/\{\{(.*?)\}\}/i", "(?<$1>[a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s\%\+]+)", $urlPreg);
+            $urlPreg = preg_replace("/\{\{(.*?)\}\}/i", "(?<$1>[a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s\%\+'\",]+)", $urlPreg);
             $urlPreg = str_replace("/", "\/", $urlPreg);
 
             $matches = [];
