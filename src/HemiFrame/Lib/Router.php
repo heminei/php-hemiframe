@@ -27,7 +27,7 @@ class Router
      * @var array
      */
     private $patterns = [
-        "vars" => "/\{\{(?<name>[a-zA-Z0-9]+)\}\}/i",
+        "vars" => "\{\{(?<name>[a-zA-Z0-9]+)(\|(?<type>[a-zA-Z0-9]+))?\}\}",
         "lang" => "(?<lang>[a-z0-9]{1,2})?",
     ];
 
@@ -336,7 +336,7 @@ class Router
             $this->urlMethods[$key] = $array['method'];
         }
 
-        $find = "/\{\{(?<name>[a-zA-Z0-9]+)\}\}/i";
+        $find = "/" . $this->patterns['vars'] . "/i";
         $vars = null;
         preg_match_all($find, $url, $vars);
         foreach ($vars['name'] as $row) {
@@ -397,6 +397,7 @@ class Router
         if (is_array($vars)) {
             foreach ($vars as $k => $v) {
                 $urlString = str_replace("{{" . $k . "}}", urlencode($v), $urlString);
+                $urlString = str_replace("{{" . $k . "|number}}", urlencode($v), $urlString);
             }
         }
         return $this->getBasePath() . $urlString;
@@ -425,7 +426,7 @@ class Router
 
         $vars = [];
         $varNames = [];
-        preg_match_all($this->patterns['vars'], $array['fromUrl'], $vars);
+        preg_match_all("/" . $this->patterns['vars'] . "/i", $array['fromUrl'], $vars);
         foreach ($vars['name'] as $row) {
             $varNames[] = $row;
         }
@@ -482,6 +483,7 @@ class Router
             if (isset($matches['lang'])) {
                 $this->currentRoute["lang"] = $matches['lang'];
             }
+
             if (isset($this->urlVars[$key]) && is_array($this->urlVars[$key])) {
                 $this->currentRoute["vars"] = [];
                 foreach ($this->urlVars[$key] as $varKey => $var) {
@@ -500,14 +502,14 @@ class Router
 
         if ($this->currentRoute["class"] === NULL && $this->currentRoute["method"] === NULL) {
             foreach ($this->urlRedirects as $redirect) {
-                $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\|number\}\}/i", "(?<$1>[0-9]+)", $urlPreg);
-                $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\}\}/i", "([a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s]+)", $redirect['fromUrl']);
+                $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\|number\}\}/i", "(?<$1>[0-9]+)", $redirect['fromUrl']);
+                $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\}\}/i", "([a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s]+)", $urlPreg);
                 $urlPreg = str_replace("/", "\/", $urlPreg);
 
                 $matches = [];
                 if (preg_match("/^\/?" . $this->patterns['lang'] . "$urlPreg\/?$/i", $url, $matches)) {
 
-                    if ($redirect['toUrl'] != NULL) {
+                    if (!empty($redirect['toUrl'])) {
                         $redirectToUrl = $redirect['toUrl'];
                     } else {
                         $redirectToUrl = $this->getRoute($redirect['toUrlKey']);
@@ -541,6 +543,7 @@ class Router
     private function replaceVars(array $vars, string $string)
     {
         foreach ($vars as $k => $v) {
+            $string = str_replace("{{" . $k . "|number}}", $v, $string);
             $string = str_replace("{{" . $k . "}}", $v, $string);
         }
         return $string;
