@@ -37,7 +37,7 @@ class Curl
 
     /**
      * Returns a cURL handle on success, FALSE on errors.
-     * @return \curl_init
+     * @return resource|false
      */
     public function getCurl()
     {
@@ -101,7 +101,7 @@ class Curl
 
     /**
      * Get user Agent
-     * @return type
+     * @return string
      */
     public function getUserAgent(): string
     {
@@ -240,12 +240,16 @@ class Curl
 
     /**
      * Return content
-     * @return string
+     * @return string|null
      */
-    public function getContent()
+    public function getContent(): ?string
     {
         $this->setReturnTransfer(1);
         $content = $this->execute();
+
+        if ($content === false) {
+            $content = null;
+        }
 
         return $content;
     }
@@ -253,7 +257,7 @@ class Curl
     /**
      * Execute the given cURL session.
      * This function should be called after initializing a cURL session and all the options for the session are set.
-     * @return \curl_exec
+     * @return string|bool
      */
     public function execute()
     {
@@ -262,18 +266,19 @@ class Curl
 
     /**
      * Close a cURL session
-     * @return \curl_close
+     * @return $this
      */
     public function close()
     {
-        return curl_close($this->curl);
+        curl_close($this->curl);
+        return $this;
     }
 
     /**
      * Sets an option on the given cURL session handle. (curl_setopt()).
-     * @param mixed $option
+     * @param int $option
      * @param mixed $value
-     * @return self
+     * @return $this
      */
     public function setOption(int $option, $value): self
     {
@@ -348,7 +353,7 @@ class Curl
      *   CURLINFO_CONTENT_LENGTH_UPLOAD - Specified size of upload
      *   CURLINFO_CONTENT_TYPE - Content-Type: of the requested document, NULL indicates server did not send valid Content-Type: header
      * @param int $opt
-     * @return \curl_getinfo
+     * @return mixed
      */
     public function getInfo(int $opt = 0)
     {
@@ -363,5 +368,4 @@ class Curl
     {
         return curl_error($this->curl);
     }
-
 }

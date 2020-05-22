@@ -25,11 +25,11 @@ class Iteration
     }
 
     /**
-     * @return int
+     * @return string
      */
     public function __toString()
     {
-        return $this->getIndex();
+        return (string) $this->getIndex();
     }
 
     /**
@@ -114,5 +114,4 @@ class Iteration
     {
         $this->totalCount = $count;
     }
-
 }

@@ -5,7 +5,8 @@ namespace HemiFrame\Lib;
 /**
  * @author heminei <heminei@heminei.com>
  */
-class HTTPAuthentication {
+class HTTPAuthentication
+{
 
 	/**
 	 *
@@ -15,11 +16,12 @@ class HTTPAuthentication {
 
 	/**
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	private $message = NULL;
 
-	public function __construct(string $message = NULL) {
+	public function __construct(string $message = NULL)
+	{
 		if ($message !== NULL) {
 			$this->setMessage($message);
 		} else {
@@ -31,9 +33,10 @@ class HTTPAuthentication {
 	 *
 	 * @return boolean
 	 */
-	public function login() {
-		if (isset($_SERVER['PHP_AUTH_USER']) AND ( array_key_exists($_SERVER['PHP_AUTH_USER'], $this->getUsers())
-			AND $_SERVER['PHP_AUTH_PW'] == $this->users[$_SERVER['PHP_AUTH_USER']])) {
+	public function login()
+	{
+		if (isset($_SERVER['PHP_AUTH_USER']) and (array_key_exists($_SERVER['PHP_AUTH_USER'], $this->getUsers())
+			and $_SERVER['PHP_AUTH_PW'] == $this->users[$_SERVER['PHP_AUTH_USER']])) {
 			return true;
 		} else {
 			header('WWW-Authenticate: Basic realm="' . $this->getMessage() . '"');
@@ -48,7 +51,8 @@ class HTTPAuthentication {
 	 * @param string $password
 	 * @return \HemiFrame\Lib\HTTPAuthentication
 	 */
-	public function addUser(string $user, string $password): self {
+	public function addUser(string $user, string $password): self
+	{
 		$this->users[$user] = $password;
 
 		return $this;
@@ -58,7 +62,8 @@ class HTTPAuthentication {
 	 *
 	 * @return array
 	 */
-	public function getUsers(): array {
+	public function getUsers(): array
+	{
 		return $this->users;
 	}
 
@@ -66,19 +71,20 @@ class HTTPAuthentication {
 	 *
 	 * @return string
 	 */
-	public function getMessage(): string {
+	public function getMessage(): string
+	{
 		return $this->message;
 	}
 
 	/**
 	 *
 	 * @param string $message
-	 * @return \self
+	 * @return $this
 	 */
-	public function setMessage(string $message): self {
+	public function setMessage(string $message): self
+	{
 		$this->message = $message;
 
 		return $this;
 	}
-
 }

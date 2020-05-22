@@ -75,6 +75,7 @@ class Benchmark {
 		} else {
 			$load = array(FALSE, FALSE, FALSE);
 		}
+		$return = null;
 		if ($type === 0) {
 			$return = $load;
 		} elseif ($type === 1) {

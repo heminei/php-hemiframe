@@ -45,7 +45,7 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
      *
      * @param string $name
      * @param array $arguments
-     * @return type
+     * @return mixed
      * @throws Exception
      */
     public function get(string $name, array $arguments = [])
@@ -65,6 +65,7 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
                 throw new Exception("Rule 'instance' must be a function");
             }
             $class = $rule['instance']($name, $arguments);
+            $className = null;
         } else if (isset($rule['instanceOf'])) {
             $className = $rule['instanceOf'];
         } else {

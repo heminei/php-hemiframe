@@ -358,14 +358,14 @@ class FFmpeg
 
     /**
      *
-     * @param type $key
-     * @return self
-     * @throws \Exception
+     * @param string $key
+     * @return $this
+     * @throws \InvalidArgumentException
      */
     public function removeOption(string $key): self
     {
         if (empty($key)) {
-            throw new \Exception("Key is empty!");
+            throw new \InvalidArgumentException("Key is empty!");
         }
         if (array_key_exists($key, $this->options)) {
             unset($this->options[$key]);

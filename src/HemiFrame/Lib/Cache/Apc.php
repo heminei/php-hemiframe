@@ -28,9 +28,9 @@ class Apc implements \HemiFrame\Interfaces\Cache {
     /**
      *
      * @param string $key
-     * @param type $value
+     * @param mixed $value
      * @param int $time
-     * @return \self
+     * @return $this
      * @throws \Exception
      */
     public function set(string $key, $value, int $time): self {
@@ -38,7 +38,7 @@ class Apc implements \HemiFrame\Interfaces\Cache {
             throw new \Exception("Enter key");
         }
 
-        apcu_add(md5($this->keyPrefix . $key), serialize($value), $time);
+        \apcu_add(md5($this->keyPrefix . $key), serialize($value), $time);
 
         return $this;
     }

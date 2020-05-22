@@ -5,7 +5,8 @@ namespace HemiFrame\Lib;
 /**
  * @author heminei <heminei@heminei.com>
  */
-class File {
+class File
+{
 
 	private $name;
 	private $size;
@@ -15,7 +16,8 @@ class File {
 	private $path;
 	private $destinationPath;
 
-	public function __construct($file = NULL) {
+	public function __construct($file = NULL)
+	{
 		if ($file !== NULL) {
 			$this->setFile($file);
 		}
@@ -24,13 +26,14 @@ class File {
 	/**
 	 *
 	 * @param array|string $file
-	 * @return \self
-	 * @throws \Exception
+	 * @return $this
+	 * @throws \InvalidArgumentException
 	 */
-	public function setFile($file): self {
+	public function setFile($file): self
+	{
 		if (is_array($file)) {
 			if (empty($file['tmp_name'])) {
-				throw new \Exception("Invalid file array. Arays must be _FILES[file]");
+				throw new \InvalidArgumentException("Invalid file array. Arays must be _FILES[file]");
 			}
 			$pathinfo = pathinfo($file['name']);
 			$this->path = $file['tmp_name'];
@@ -39,15 +42,16 @@ class File {
 			$this->mimeType = $file['type'];
 		} else if (is_string($file)) {
 			if (!is_readable($file)) {
-				throw new \Exception("$file - The file can't be read");
+				throw new \InvalidArgumentException("$file - The file can't be read");
 			}
 			$pathinfo = pathinfo($file);
 			$this->path = $file;
 			$this->name = $pathinfo['basename'];
 			$this->size = filesize($file);
 			$this->mimeType = mime_content_type($file);
+			/* @phpstan-ignore-next-line */
 		} else {
-			throw new \Exception("Invalid file");
+			throw new \InvalidArgumentException("Invalid file");
 		}
 		$this->md5 = md5_file($this->path);
 		$this->type = strtolower($pathinfo['extension']);
@@ -55,31 +59,38 @@ class File {
 		return $this;
 	}
 
-	public function getName(): string {
+	public function getName(): string
+	{
 		return $this->name;
 	}
 
-	public function getSize(): int {
+	public function getSize(): int
+	{
 		return $this->size;
 	}
 
-	public function getType(): string {
+	public function getType(): string
+	{
 		return $this->type;
 	}
 
-	public function getMd5(): string {
+	public function getMd5(): string
+	{
 		return $this->md5;
 	}
 
-	public function getMimeType(): string {
+	public function getMimeType(): string
+	{
 		return $this->mimeType;
 	}
 
-	public function getPath(): string {
+	public function getPath(): string
+	{
 		return $this->path;
 	}
 
-	public function getDestinationPath() {
+	public function getDestinationPath()
+	{
 		return $this->destinationPath;
 	}
 
@@ -87,9 +98,10 @@ class File {
 	 *
 	 * @param string $path
 	 * @param int $mode
-	 * @return \self
+	 * @return $this
 	 */
-	public function setDestinationPath(string $path, $mode = 0777): self {
+	public function setDestinationPath(string $path, $mode = 0777): self
+	{
 		$this->destinationPath = $path;
 		if (!is_dir($path)) {
 			if (!mkdir($this->destinationPath, $mode, true)) {
@@ -107,7 +119,8 @@ class File {
 	 * @return self
 	 * @throws \Exception
 	 */
-	public function generateDestinationPath(string $path, $mode = 0777): self {
+	public function generateDestinationPath(string $path, $mode = 0777): self
+	{
 		$y = date('Y');
 		$w = date('m');
 		$j = date('j');
@@ -120,18 +133,19 @@ class File {
 		return $this;
 	}
 
-	public function copy(): bool {
+	public function copy(): bool
+	{
 		if (empty($this->destinationPath)) {
 			throw new \Exception("Destination Path is empty.");
 		}
 		return copy($this->path, $this->destinationPath);
 	}
 
-	public function moveUploadedFile(): bool {
+	public function moveUploadedFile(): bool
+	{
 		if (empty($this->destinationPath)) {
 			throw new \Exception("Destination Path is empty.");
 		}
 		return move_uploaded_file($this->path, $this->destinationPath);
 	}
-
 }

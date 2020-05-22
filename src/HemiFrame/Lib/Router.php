@@ -159,7 +159,7 @@ class Router
     /**
      * @param string $path
      * @param integer $cacheTime
-     * @param string"null $cacheKey
+     * @param string|null $cacheKey
      * @return array
      */
     public function scanDirectory(string $path, int $cacheTime = 300, ?string $cacheKey = null): array
@@ -293,7 +293,7 @@ class Router
     /**
      *
      * @param array $array
-     * @return \self
+     * @return $this
      * @throws \InvalidArgumentException
      */
     public function setRoute(array $array): self

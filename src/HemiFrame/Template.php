@@ -101,7 +101,7 @@ class Template
         return $this;
     }
 
-    public function outernHtml($html = null): self
+    public function outernHtml($html = null)
     {
         if ($this->tagMarker !== null) {
             preg_match("/" . $this->tagMarker . "(.*?)>/s", $this->html, $matchesStartTag);
@@ -137,7 +137,7 @@ class Template
     /**
      *
      * @param string $id Loop ID
-     * @param array|Traversable $array Result Array
+     * @param array|\Traversable $array Result Array
      * @param object|null $instance Object
      * @param string|\Closure|null $method Method
      */

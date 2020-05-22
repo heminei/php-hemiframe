@@ -7,12 +7,14 @@ namespace HemiFrame\Lib;
  * @author heminei <heminei@heminei.com>
  *
  */
-class StringEditor {
+class StringEditor
+{
 
 	private $string = NULL;
 	private $encoding = "UTF-8";
 
-	public function __construct($string = NULL) {
+	public function __construct($string = NULL)
+	{
 		if ($string !== NULL) {
 			$this->setString($string);
 		}
@@ -20,18 +22,20 @@ class StringEditor {
 
 	/**
 	 *
-	 * @return strig
+	 * @return string
 	 */
-	public function __toString() {
+	public function __toString()
+	{
 		return (string) $this->getString();
 	}
 
 	/**
 	 * Select string
 	 * @param string $string
-	 * @return \self
+	 * @return $this
 	 */
-	public function setString(string $string): self {
+	public function setString(string $string): self
+	{
 		$this->string = $string;
 		return $this;
 	}
@@ -40,7 +44,8 @@ class StringEditor {
 	 * Get string
 	 * @return string
 	 */
-	public function getString(): string {
+	public function getString(): string
+	{
 		return $this->string;
 	}
 
@@ -48,7 +53,8 @@ class StringEditor {
 	 *
 	 * @return string
 	 */
-	public function getEncoding(): string {
+	public function getEncoding(): string
+	{
 		return $this->encoding;
 	}
 
@@ -56,7 +62,8 @@ class StringEditor {
 	 *
 	 * @param string $encoding
 	 */
-	public function setEncoding(string $encoding): self {
+	public function setEncoding(string $encoding): self
+	{
 		$this->encoding = $encoding;
 		return $this;
 	}
@@ -64,9 +71,10 @@ class StringEditor {
 	/**
 	 * Append string
 	 * @param string $string
-	 * @return \self
+	 * @return $this
 	 */
-	public function appendString(string $string): self {
+	public function appendString(string $string): self
+	{
 		$this->string = $this->string . $string;
 		return $this;
 	}
@@ -74,9 +82,10 @@ class StringEditor {
 	/**
 	 * Prepend string
 	 * @param string $string
-	 * @return \self
+	 * @return $this
 	 */
-	public function prependString(string $string): self {
+	public function prependString(string $string): self
+	{
 		if ($string !== NULL) {
 			$this->string = $string . $this->string;
 		}
@@ -87,19 +96,21 @@ class StringEditor {
 	 * Replace string
 	 * @param string $search
 	 * @param string $replace
-	 * @return \self
+	 * @return $this
 	 */
-	public function replace(string $search, string $replace): self {
+	public function replace(string $search, string $replace): self
+	{
 		$this->string = str_replace($search, $replace, $this->string);
 		return $this;
 	}
 
 	/**
 	 * Remove string
-	 * @param int $string
-	 * @return \self
+	 * @param string $string
+	 * @return $this
 	 */
-	public function remove(string $string): self {
+	public function remove(string $string): self
+	{
 		$this->replace($string, "");
 		return $this;
 	}
@@ -108,7 +119,8 @@ class StringEditor {
 	 * Get lenght string
 	 * @return int
 	 */
-	public function getLength(): int {
+	public function getLength(): int
+	{
 		return mb_strlen($this->string, $this->getEncoding());
 	}
 
@@ -116,15 +128,17 @@ class StringEditor {
 	 * Get last char
 	 * @return string
 	 */
-	public function getLastChar(): string {
+	public function getLastChar(): string
+	{
 		return mb_substr($this->getString(), -1, NULL, $this->getEncoding());
 	}
 
 	/**
 	 * Transliterate string
-	 * @return \self
+	 * @return $this
 	 */
-	public function transliterate(): self {
+	public function transliterate(): self
+	{
 		$bg = array(
 			"а", "б", "в", "г", "д", "е", "ж", "з", "и", "й", "к", "л", "м", "н", "о",
 			"п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "ъ", "ь", "ю", "я",
@@ -143,9 +157,10 @@ class StringEditor {
 
 	/**
 	 * Transliterate string
-	 * @return \self
+	 * @return $this
 	 */
-	public function transliterateToBg(): self {
+	public function transliterateToBg(): self
+	{
 		$bg = array(
 			"Щ", "щ", "а", "б", "в", "г", "д", "е", "ж", "з", "и", "й", "к", "л", "м", "н", "о",
 			"п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "ъ", "ь", "ю", "я",
@@ -165,10 +180,12 @@ class StringEditor {
 	/**
 	 * Short string
 	 * @param int $length
-	 * @param bool $addDots
-	 * @return \self
+	 * @param bool $addSuffix
+	 * @param string $suffixContent
+	 * @return $this
 	 */
-	public function cropString(int $length, bool $addSuffix = false, string $suffixContent = "..."): self {
+	public function cropString(int $length, bool $addSuffix = false, string $suffixContent = "..."): self
+	{
 		$string = mb_substr($this->string, 0, $length, $this->getEncoding());
 		if ($addSuffix === false) {
 			$string = $string . $suffixContent;
@@ -180,9 +197,10 @@ class StringEditor {
 
 	/**
 	 * To url string
-	 * @return \self
+	 * @return $this
 	 */
-	public function toUrlString(): self {
+	public function toUrlString(): self
+	{
 
 		$this->string = htmlspecialchars_decode($this->string);
 		$this->string = str_replace(" ", "-", $this->string);
@@ -196,7 +214,8 @@ class StringEditor {
 			"ĳ", "ĵ", "ķ", "ļ", "ł", "ń", "ň", "ñ", "ņ", "ó", "ò", "ô", "ö", "õ", "ő", "ø", "ơ", "œ", "Ŕ", "Ř",
 			"Ś", "Ŝ", "Š", "Ş", "Ť", "Ţ", "Þ", "Ú", "Ù", "Û", "Ü", "Ŭ", "Ū", "Ů", "Ų", "Ű", "Ư", "Ŵ", "Ý", "Ŷ", "Ÿ",
 			"Ź", "Ż", "Ž", "ŕ", "ř", "ś", "ŝ", "š", "ş", "ß", "ť", "ţ", "þ", "ú", "ù", "û", "ü", "ŭ", "ū", "ů", "ų", "ű", "ư",
-			"ŵ", "ý", "ŷ", "ÿ", "ź", "ż", "ž");
+			"ŵ", "ý", "ŷ", "ÿ", "ź", "ż", "ž"
+		);
 		$to = array(
 			"A", "A", "A", "A", "A", "A", "A", "A", "A", "AE", "C", "C", "C", "C", "C", "D", "D", "D",
 			"E", "E", "E", "E", "E", "E", "E", "E", "G", "G", "G", "G", "G", "a", "a", "a", "a", "a", "a", "a", "a", "a",
@@ -206,7 +225,8 @@ class StringEditor {
 			"ij", "j", "k", "l", "l", "n", "n", "n", "n", "o", "o", "o", "o", "o", "o", "o", "o", "o", "R", "R",
 			"S", "S", "S", "S", "T", "T", "T", "U", "U", "U", "U", "U", "U", "U", "U", "U", "U", "W", "Y", "Y", "Y",
 			"Z", "Z", "Z", "r", "r", "s", "s", "s", "s", "B", "t", "t", "b", "u", "u", "u", "u", "u", "u", "u", "u", "u", "u",
-			"w", "y", "y", "y", "z", "z", "z");
+			"w", "y", "y", "y", "z", "z", "z"
+		);
 		$this->string = str_replace($from, $to, $this->string);
 		$this->string = preg_replace('/[^A-Za-zа-яА-Я0-9-_+]+/iu', '', $this->string);
 
@@ -215,27 +235,30 @@ class StringEditor {
 
 	/**
 	 * To uppercase string
-	 * @return \self
+	 * @return $this
 	 */
-	public function toUppercase(): self {
+	public function toUppercase(): self
+	{
 		$this->string = mb_strtoupper($this->string, $this->getEncoding());
 		return $this;
 	}
 
 	/**
 	 * To lowercase string
-	 * @return \self
+	 * @return $this
 	 */
-	public function toLowercase(): self {
+	public function toLowercase(): self
+	{
 		$this->string = mb_strtolower($this->string, $this->getEncoding());
 		return $this;
 	}
 
 	/**
 	 * Trim string
-	 * @return \self
+	 * @return $this
 	 */
-	public function trim(): self {
+	public function trim(): self
+	{
 		$this->string = trim($this->string);
 		return $this;
 	}
@@ -245,34 +268,38 @@ class StringEditor {
 	 * @param string $delimiter
 	 * @return array
 	 */
-	public function explode(string $delimiter): array {
+	public function explode(string $delimiter): array
+	{
 		$array = explode($delimiter, $this->string);
 		return $array;
 	}
 
 	/**
 	 * MD5 current string
-	 * @return \self
+	 * @return $this
 	 */
-	public function md5(): self {
+	public function md5(): self
+	{
 		$this->string = md5($this->string);
 		return $this;
 	}
 
 	/**
 	 * SHA1 current string
-	 * @return \self
+	 * @return $this
 	 */
-	public function sha1(): self {
+	public function sha1(): self
+	{
 		$this->string = sha1($this->string);
 		return $this;
 	}
 
 	/**
 	 * Inserts HTML line breaks before all newlines in a string
-	 * @return \self
+	 * @return $this
 	 */
-	public function nl2br(bool $isXhtml = true): self {
+	public function nl2br(bool $isXhtml = true): self
+	{
 		$this->string = nl2br($this->string, $isXhtml);
 		return $this;
 	}
@@ -280,9 +307,10 @@ class StringEditor {
 	/**
 	 * Strip HTML and PHP tags from a string
 	 * @param string $allowableTags
-	 * @return \self
+	 * @return $this
 	 */
-	public function stripTags($allowableTags = NULL): self {
+	public function stripTags($allowableTags = NULL): self
+	{
 		$this->string = strip_tags($this->string, $allowableTags);
 		return $this;
 	}
@@ -291,9 +319,10 @@ class StringEditor {
 	 * Return part of a string
 	 * @param int $start
 	 * @param int $length
-	 * @return \self
+	 * @return $this
 	 */
-	public function substr(int $start, $length = null): self {
+	public function substr(int $start, $length = null): self
+	{
 		$this->string = mb_substr($this->string, $start, $length);
 		return $this;
 	}
@@ -303,9 +332,10 @@ class StringEditor {
 	 * @param int $width The number of characters at which the string will be wrapped.
 	 * @param string $break The line is broken using the optional break parameter.
 	 * @param bool $cut If the cut is set to TRUE, the string is always wrapped at or before the specified width.
-	 * @return \self
+	 * @return $this
 	 */
-	public function wordwrap(int $width = 75, string $break = "\n", bool $cut = false): self {
+	public function wordwrap(int $width = 75, string $break = "\n", bool $cut = false): self
+	{
 		$this->string = wordwrap($this->string, $width, $break, $cut);
 		return $this;
 	}
@@ -313,12 +343,12 @@ class StringEditor {
 	/**
 	 * Generate random string (1234567890qwertyuiopasdfgjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM)
 	 * @param int $length - string length
-	 * @return \self
+	 * @return $this
 	 */
-	public function generateRandomString(int $length = 10): self {
+	public function generateRandomString(int $length = 10): self
+	{
 		$simbols = "1234567890qwertyuiopasdfgjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
 		$this->string = substr(str_shuffle($simbols), 0, $length);
 		return $this;
 	}
-
 }

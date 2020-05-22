@@ -18,7 +18,7 @@ class File implements \HemiFrame\Interfaces\Cache {
     /**
      *
      * @param string $folder
-     * @return \self
+     * @return $this
      * @throws \Exception
      */
     public function setFolder(string $folder): self {
@@ -50,9 +50,9 @@ class File implements \HemiFrame\Interfaces\Cache {
     /**
      *
      * @param string $key
-     * @param type $value
+     * @param mixed $value
      * @param int $time
-     * @return \self
+     * @return $this
      * @throws \Exception
      */
     public function set(string $key, $value, int $time): self {

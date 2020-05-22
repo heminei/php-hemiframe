@@ -6,7 +6,8 @@ namespace HemiFrame\Lib;
  * Create tag
  * @author Heminei
  */
-class Tag {
+class Tag
+{
 
 	private $tag;
 	private $attr = array();
@@ -15,13 +16,15 @@ class Tag {
 	private $selfClose = FALSE;
 	private $selfCloseTagList = array("img", "link", "meta", "br", "hr", "input");
 
-	public function __construct($tag = NULL) {
+	public function __construct($tag = NULL)
+	{
 		if ($tag !== NULL) {
 			$this->setTag($tag);
 		}
 	}
 
-	public function __toString() {
+	public function __toString()
+	{
 		return $this->build();
 	}
 
@@ -29,16 +32,18 @@ class Tag {
 	 * Get string
 	 * @return string
 	 */
-	public function getTag(): string {
+	public function getTag(): string
+	{
 		return $this->tag;
 	}
 
 	/**
 	 * Set string
 	 * @param string $tag
-	 * @return \HemiFrame\Lib\Tag
+	 * @return $this
 	 */
-	public function setTag(string $tag): self {
+	public function setTag(string $tag): self
+	{
 		$this->tag = $tag;
 		if (in_array($this->tag, $this->selfCloseTagList)) {
 			$this->setSelfClose(TRUE);
@@ -52,7 +57,8 @@ class Tag {
 	 * @param string $attr
 	 * @return string
 	 */
-	public function getAttr(string $attr): self {
+	public function getAttr(string $attr): string
+	{
 		if (isset($this->attrValues[$attr])) {
 			return $this->attrValues[$attr];
 		} else {
@@ -63,10 +69,11 @@ class Tag {
 	/**
 	 * Set attr
 	 * @param string $attr
-	 * @param midex $value
-	 * @return \HemiFrame\Lib\Tag
+	 * @param mixed $value
+	 * @return $this
 	 */
-	public function setAttr(string $attr, $value): self {
+	public function setAttr(string $attr, $value): self
+	{
 		$this->attr[] = $attr;
 		$this->attrValues[$attr] = htmlentities($value);
 		return $this;
@@ -74,18 +81,20 @@ class Tag {
 
 	/**
 	 * Get inner content
-	 * @return midex
+	 * @return mixed
 	 */
-	public function getContent() {
+	public function getContent()
+	{
 		return $this->content;
 	}
 
 	/**
 	 * Set inner content
-	 * @param midex $content
-	 * @return \HemiFrame\Lib\Tag
+	 * @param mixed $content
+	 * @return $this
 	 */
-	public function setContent($content): self {
+	public function setContent($content): self
+	{
 		$this->content = $content;
 
 		return $this;
@@ -93,10 +102,11 @@ class Tag {
 
 	/**
 	 *
-	 * @param midex $content
-	 * @return \HemiFrame\Lib\Tag
+	 * @param mixed $content
+	 * @return $this
 	 */
-	public function appendContent($content): self {
+	public function appendContent($content): self
+	{
 		$this->content = $this->content . $content;
 
 		return $this;
@@ -104,10 +114,11 @@ class Tag {
 
 	/**
 	 *
-	 * @param midex $content
-	 * @return \HemiFrame\Lib\Tag
+	 * @param mixed $content
+	 * @return $this
 	 */
-	public function prependContent($content): self {
+	public function prependContent($content): self
+	{
 		$this->content = $content . $this->content;
 
 		return $this;
@@ -116,9 +127,10 @@ class Tag {
 	/**
 	 * Enable self close tag
 	 * @param bool $bool
-	 * @return \HemiFrame\Lib\Tag
+	 * @return $this
 	 */
-	public function setSelfClose(bool $bool): self {
+	public function setSelfClose(bool $bool): self
+	{
 		$this->selfClose = $bool;
 
 		return $this;
@@ -128,7 +140,8 @@ class Tag {
 	 * Return html tag string
 	 * @return string
 	 */
-	public function build(): string {
+	public function build(): string
+	{
 		$html = "";
 		$attrSting = "";
 		if (count($this->attr) > 0) {
@@ -146,5 +159,4 @@ class Tag {
 
 		return $html;
 	}
-
 }

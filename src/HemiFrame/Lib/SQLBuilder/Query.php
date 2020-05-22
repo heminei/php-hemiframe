@@ -424,10 +424,9 @@ class Query
             }
             if ($this->resultCacheImplementation->exists($cacheKey)) {
                 $data = $this->resultCacheImplementation->get($cacheKey);
-                if (!is_array($data)) {
-                    $data = [];
+                if (is_array($data)) {
+                    return $data;
                 }
-                return $data;
             }
         }
 
@@ -457,10 +456,9 @@ class Query
             }
             if ($this->resultCacheImplementation->exists($cacheKey)) {
                 $data = $this->resultCacheImplementation->get($cacheKey);
-                if (!is_object($data) && $data !== null) {
-                    $data = null;
+                if (is_object($data) || $data == null) {
+                    return $data;
                 }
-                return $data;
             }
         }
 
@@ -490,10 +488,9 @@ class Query
             }
             if ($this->resultCacheImplementation->exists($cacheKey)) {
                 $data = $this->resultCacheImplementation->get($cacheKey);
-                if (!is_array($data)) {
-                    $data = [];
+                if (is_array($data)) {
+                    return $data;
                 }
-                return $data;
             }
         }
 
@@ -524,10 +521,9 @@ class Query
             }
             if ($this->resultCacheImplementation->exists($cacheKey)) {
                 $data = $this->resultCacheImplementation->get($cacheKey);
-                if (!is_array($data)) {
-                    $data = [];
+                if (is_array($data)) {
+                    return $data;
                 }
-                return $data;
             }
         }
 
@@ -557,10 +553,9 @@ class Query
             }
             if ($this->resultCacheImplementation->exists($cacheKey)) {
                 $data = $this->resultCacheImplementation->get($cacheKey);
-                if (!is_array($data) && $data !== null) {
-                    $data = null;
+                if (is_array($data) || $data == null) {
+                    return $data;
                 }
-                return $data;
             }
         }
 
@@ -1255,7 +1250,7 @@ class Query
         if ($replaceParameters === true) {
             foreach ($this->getVars() as $name => $value) {
                 if (is_int($value)) {
-                    $queryString = str_replace(":" . $name, $value, $queryString);
+                    $queryString = str_replace(":" . $name, (string) $value, $queryString);
                 } else {
                     $queryString = str_replace(":" . $name, '"' . $value . '"', $queryString);
                 }
@@ -1267,7 +1262,7 @@ class Query
 
     public static function getDatabaseTables()
     {
-        $query = new self(self::$config);
+        $query = new static(self::$config);
         $query->select([
             "table_name AS `name`",
             "table_schema AS `schema`",

@@ -27,8 +27,7 @@ class Autoloader
     }
 
     /**
-     *
-     * @return \spl_autoload_register
+     * @return bool
      */
     public static function register(): bool
     {
@@ -69,7 +68,7 @@ class Autoloader
     public static function registerNamespace(string $namespace, string $path)
     {
         $namespace = trim($namespace);
-        if (!isset($path)) {
+        if (empty($path)) {
             throw new \InvalidArgumentException('Invalid path');
         }
         $_path = realpath($path);
