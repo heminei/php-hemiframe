@@ -80,7 +80,7 @@ class DBSession implements \HemiFrame\Interfaces\Session
             $q = new \HemiFrame\Lib\SQLBuilder\Query([
                 "pdo" => $this->getPdo(),
             ]);
-            $q->delete($this->getTableName())->where("name", $this->getName())->andWhere("sessionId", $this->getId());
+            $q->delete()->from($this->getTableName())->where("name", $this->getName())->andWhere("sessionId", $this->getId());
             $q->execute();
         }
 
@@ -90,12 +90,12 @@ class DBSession implements \HemiFrame\Interfaces\Session
     public function deleteExpired()
     {
         if (!$this->pdo instanceof \PDO) {
-            throw new \Exception("Set PDO object!");
+            throw new \RuntimeException("Set PDO object!");
         }
         $q = new \HemiFrame\Lib\SQLBuilder\Query([
             "pdo" => $this->getPdo(),
         ]);
-        $q->delete($this->getTableName())->where("name", $this->getName())->andWhere("expiryDate < :date");
+        $q->delete()->from($this->getTableName())->where("name", $this->getName())->andWhere("expiryDate < :date");
         $q->setVar("date", date("Y-m-d H:i:s"))->execute();
     }
 
@@ -241,7 +241,7 @@ class DBSession implements \HemiFrame\Interfaces\Session
                 "pdo" => $this->getPdo(),
             ]);
             $q->select()->from($this->getTableName());
-            $q->where("sessionId", $this->getId())->andWhere("name", $this->getName())->andWhere("expiryDate >= :expiryDate");
+            $q->andWhere("sessionId", $this->getId())->andWhere("name", $this->getName())->andWhere("expiryDate >= :expiryDate");
             $q->setVar("expiryDate", date("Y-m-d H:i:s"));
             $q->execute();
 

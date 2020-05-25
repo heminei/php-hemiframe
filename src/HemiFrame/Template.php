@@ -8,21 +8,18 @@ namespace HemiFrame;
 class Template
 {
     private $html = null;
-    private $templateVars = array();
-    private $tagMarker = null;
-    private $tag;
+    private $vars = [];
     private $autoRemoveLoops = true;
     private $autoRemoveSwitchers = true;
     private $autoRemoveVariables = true;
 
     public function __construct(string $template)
     {
-        $path = $template;
-        if (mb_strlen($path) <= 260 && file_exists($path)) {
-            if (is_readable($path)) {
-                $this->html = file_get_contents($path);
+        if (mb_strlen($template) <= 260 && file_exists($template)) {
+            if (is_readable($template)) {
+                $this->html = file_get_contents($template);
             } else {
-                throw new \Exception("File can not be read.");
+                throw new \InvalidArgumentException("The file is not readable.");
             }
         } else {
             $this->html = $template;
@@ -31,7 +28,7 @@ class Template
 
     public function __set(string $name, $value)
     {
-        $this->templateVars[$name] = $value;
+        $this->setVar($name, $value);
     }
 
     public function __get(string $name)
@@ -44,92 +41,38 @@ class Template
         return $this->parse();
     }
 
-    public function getVar(string $name)
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @return self
+     */
+    public function setVar(string $name, $value): self
     {
-        if (isset($this->templateVars[$name])) {
-            return $this->templateVars[$name];
-        } else {
-            return null;
-        }
+        $this->vars[$name] = $value;
+
+        return $this;
     }
 
+    /**
+     * @param string $name
+     * @return mixed
+     */
+    public function getVar(string $name)
+    {
+        if (isset($this->vars[$name])) {
+            return $this->vars[$name];
+        }
+        return null;
+    }
+
+    /**
+     * @param string $search
+     * @param string $replace
+     * @return self
+     */
     public function replaceString(string $search, string $replace): self
     {
         $this->html = str_replace($search, $replace, $this->html);
-
-        return $this;
-    }
-
-    public function innerHtml($html = null)
-    {
-        if ($this->tagMarker !== null) {
-            preg_match("/" . $this->tagMarker . "(.*?)>/s", $this->html, $matchesStartTag);
-            $startTag = $matchesStartTag[0];
-            $endTag = "</" . $this->tag . ">";
-
-            $htmlArray = explode($startTag, $this->html);
-            $openTagCount = substr_count($htmlArray[1], "<" . $this->tag);
-            $closeTagCount = substr_count($htmlArray[1], $endTag);
-            if ($openTagCount + 1 != $closeTagCount) {
-                throw new \Exception("Not closed tag: " . $this->tag . $this->html);
-            }
-
-            $check = explode($endTag, $htmlArray[1]);
-            $j = 0;
-            for ($i = 0; $i < count($check); $i++) {
-                $c = count(explode("<" . $this->tag, $check[$i])) - 1;
-                if (strstr($check[$i], "<" . $this->tag)) {
-                    $j = $j + $c;
-                }
-                if ($j - $i <= 0) {
-                    break;
-                }
-            }
-            $innerHtml = explode($endTag, $htmlArray[1]);
-            $innerHtmlSlice = array_slice($innerHtml, 0, $j + 1);
-            $innerHtml = implode($endTag, $innerHtmlSlice);
-
-            if ($html === null) {
-                return $innerHtml;
-            } else {
-                $this->replaceString($innerHtml, $html);
-            }
-        } else {
-            throw new \Exception("Tag marker not selected");
-        }
-
-        return $this;
-    }
-
-    public function outernHtml($html = null)
-    {
-        if ($this->tagMarker !== null) {
-            preg_match("/" . $this->tagMarker . "(.*?)>/s", $this->html, $matchesStartTag);
-            $startTag = $matchesStartTag[0];
-            $endTag = "</" . $this->tag . ">";
-
-            $innerHtml = $this->innerHtml();
-
-            $outernHtml = $startTag . $innerHtml . $endTag;
-            if ($html === null) {
-                return $outernHtml;
-            } else {
-                $this->replaceString($outernHtml, $html);
-            }
-        } else {
-            throw new \Exception("Tag marker not selected");
-        }
-
-        return $this;
-    }
-
-    private function setTagMarker($html, $marker): self
-    {
-        if (strstr($this->html, $html)) {
-            $this->html = $this->strReplaceFirst($html, $marker, $this->html);
-        } else {
-            throw new \Exception("$html not found");
-        }
 
         return $this;
     }
@@ -143,21 +86,19 @@ class Template
      */
     public function setLoop(string $id, $array, $instance = null, $method = null): self
     {
-        $this->clearTagMarker();
         if ($method == null) {
             $method = $id;
         }
 
-        if (!is_array($array) && !$array instanceof \Traversable) {
+        if (!is_array($array) && ($array instanceof \Traversable) == false) {
             throw new \InvalidArgumentException("Invalid array parameter");
         }
 
         do {
-            $this->tag = "wLoop";
-            $this->tagMarker = "<:selectParser:" . $this->tag;
-            $this->setTagMarker("<" . $this->tag . " id=\"$id\"", $this->tagMarker . " id=\"$id\"");
-
-            $loopHtml = $this->innerHtml();
+            $tag = "wLoop";
+            $element = '<' . $tag . ' id="' . $id . '">';
+            $outernHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+            $innerHtml = $this->getElementInnerHtml($this->html, $element, $tag);
 
             $htmlString = "";
             $i = 1;
@@ -165,7 +106,7 @@ class Template
             if (!empty($array)) {
                 $iteration->setTotalCount(count($array));
                 foreach ($array as $value) {
-                    $itemClass = new Template($loopHtml);
+                    $itemClass = new Template($innerHtml);
                     $iteration->setIndex($i);
                     if ($instance === null) {
                         $method($itemClass, $value, $iteration);
@@ -175,78 +116,76 @@ class Template
                     $htmlString .= $itemClass->parse();
                     $i++;
                 }
-                $this->outernHtml($htmlString);
-            } else {
-                $this->outernHtml("");
             }
-        } while (strstr($this->html, '<wLoop id="' . $id . '"'));
+
+            $this->html = $this->strReplaceFirst($outernHtml, $htmlString, $this->html);
+        } while (strstr($this->html, $element));
 
         return $this;
     }
 
+    /**
+     * @param string $id
+     * @param string $value
+     * @return self
+     */
     public function setSwitcher(string $id, string $value): self
     {
-        $this->clearTagMarker();
-
         do {
-            $htmlOr = $this->html;
+            $tag = "wSwitcher";
+            $element = '<' . $tag . ' id="' . $id . '">';
+            $outernHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+            $innerHtml = $this->getElementInnerHtml($this->html, $element, $tag);
 
-            $this->tag = "wSwitcher";
-            $this->tagMarker = "<:selectParser:" . $this->tag;
-            $this->setTagMarker("<" . $this->tag . " id=\"$id\"", $this->tagMarker . " id=\"$id\"");
+            if (empty($outernHtml)) {
+                throw new \InvalidArgumentException("Can't find switcher with ID:" .  $id);
+            }
 
-            $this->html = $this->innerHtml();
+            $tagCase = "case";
+            $elementCase = '<' . $tagCase . ' value="' . $value . '">';
+            $innerHtmlCase = $this->getElementInnerHtml($innerHtml, $elementCase, $tagCase);
 
-            $this->tag = "case";
-            $this->tagMarker = "<:selectParser:" . $this->tag;
-            $this->setTagMarker("<" . $this->tag . " value=\"$value\"", $this->tagMarker . " value=\"$value\"");
+            if (empty($innerHtmlCase)) {
+                throw new \InvalidArgumentException("Can't find case with value '" . $value . "' in switcher with ID '" .  $id . "'");
+            }
 
-            $caseHtml = $this->innerHtml();
-
-            $this->html = $htmlOr;
-
-            $this->tag = "wSwitcher";
-            $this->tagMarker = "<:selectParser:" . $this->tag;
-            $this->setTagMarker("<" . $this->tag . " id=\"$id\"", $this->tagMarker . " id=\"$id\"");
-
-            $this->outernHtml($caseHtml);
-        } while (strstr($this->html, '<wSwitcher id="' . $id . '"'));
+            $this->html = $this->strReplaceFirst($outernHtml, $innerHtmlCase, $this->html);
+        } while (strstr($this->html, $element));
 
         return $this;
     }
 
+    /**
+     * Clear unused loops
+     * @return self
+     */
     public function clearLoops(): self
     {
-        if (strstr($this->html, "<wLoop")) {
-            do {
-                $this->tag = "wLoop";
-                $this->tagMarker = "<:selectParser:" . $this->tag;
-                $this->setTagMarker("<" . $this->tag . "", $this->tagMarker);
-                $this->outernHtml(" ");
-            } while (strstr($this->html, "<wLoop"));
+        $results = [];
+        preg_match_all('/\<wLoop id\=\"(?<ids>.*)\">/', $this->html, $results);
+        foreach ($results['ids'] as $id) {
+            $tag = "wLoop";
+            $element = '<' . $tag . ' id="' . $id . '">';
+            $outernHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+            $this->html = $this->strReplaceFirst($outernHtml, '', $this->html);
         }
-
         return $this;
     }
 
+    /**
+     * Clear unused switches
+     * @return self
+     */
     public function clearSwitchers(): self
     {
-        if (strstr($this->html, "<wSwitcher")) {
-            do {
-                $this->tag = "wSwitcher";
-                $this->tagMarker = "<:selectParser:" . $this->tag;
-                $this->setTagMarker("<" . $this->tag . "", $this->tagMarker);
-                $this->outernHtml(" ");
-            } while (strstr($this->html, "<wSwitcher"));
+        $results = [];
+        preg_match_all('/\<wSwitcher id\=\"(?<ids>.*)\">/', $this->html, $results);
+        foreach ($results['ids'] as $id) {
+            $tag = "wSwitcher";
+            $element = '<' . $tag . ' id="' . $id . '">';
+            $outernHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+            $this->html = $this->strReplaceFirst($outernHtml, '', $this->html);
         }
-
-        return $this;
-    }
-
-    private function clearTagMarker(): self
-    {
-        $this->replaceString(":selectParser:", "");
-
         return $this;
     }
 
@@ -282,7 +221,7 @@ class Template
 
     public function parse(): string
     {
-        foreach ($this->templateVars as $key => $value) {
+        foreach ($this->vars as $key => $value) {
             if (is_array($value) or is_object($value)) {
                 foreach ($value as $key1 => $value1) {
                     $tagToReplace = "{{" . $key . "." . $key1 . "}}";
@@ -307,9 +246,14 @@ class Template
         return $this->html;
     }
 
-    public function view()
+    public function view(): void
     {
         echo $this->parse();
+    }
+
+    public function getHtml(): ?string
+    {
+        return $this->html;
     }
 
     private function strReplaceFirst(string $search, string $replace, string $subject): string
@@ -319,5 +263,38 @@ class Template
             $subject = substr_replace($subject, $replace, $pos, strlen($search));
         }
         return $subject;
+    }
+
+    private function getElementOuterHtml(string $html, string $element, string $tag): ?string
+    {
+        $innerHtml = $this->getElementInnerHtml($html, $element, $tag);
+        if ($innerHtml == null) {
+            return null;
+        }
+
+        $outerHtml = $element . $innerHtml . "</" . $tag . ">";
+        return $outerHtml;
+    }
+
+    private function getElementInnerHtml(string $html, string $element, string $tag): ?string
+    {
+        $startArray = explode($element, $html, 2);
+        if (!isset($startArray[1])) {
+            return null;
+        }
+        $endArray = explode("</" . $tag . ">", $startArray[1]);
+        $countOpenTags = 0;
+        $innerHtml = "";
+        foreach ($endArray as $key => $value) {
+            if (strstr($value, "<" .  $tag . " ")) {
+                $countOpenTags++;
+            }
+            $innerHtml .= $value;
+            if ($key == $countOpenTags) {
+                break;
+            }
+            $innerHtml .= "</" . $tag . ">";
+        }
+        return $innerHtml;
     }
 }
