@@ -33,7 +33,7 @@ class File
 	{
 		if (is_array($file)) {
 			if (empty($file['tmp_name'])) {
-				throw new \InvalidArgumentException("Invalid file array. Arays must be _FILES[file]");
+				throw new \InvalidArgumentException("Invalid file array. Array must be _FILES[file]");
 			}
 			$pathinfo = pathinfo($file['name']);
 			$this->path = $file['tmp_name'];
@@ -50,6 +50,13 @@ class File
 			$this->size = filesize($file);
 			$this->mimeType = mime_content_type($file);
 			/* @phpstan-ignore-next-line */
+		} else if ($file instanceof \Psr\Http\Message\UploadedFileInterface) {
+			/** @var \Psr\Http\Message\UploadedFileInterface $file */
+			$pathinfo = pathinfo($file->getClientFilename());
+			$this->path = $file->getStream()->getMetadata('uri');
+			$this->name = $file->getClientFilename();
+			$this->size = $file->getSize();
+			$this->mimeType = $file->getClientMediaType();
 		} else {
 			throw new \InvalidArgumentException("Invalid file");
 		}
