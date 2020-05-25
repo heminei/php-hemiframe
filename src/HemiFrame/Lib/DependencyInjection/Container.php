@@ -92,11 +92,10 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
                 }
             }
             $class = $reflection->newInstanceWithoutConstructor();
+            $this->injectProperties($class, $reflection);
             if (!empty($constructor)) {
                 call_user_func_array(array($class, '__construct'), $arguments);
             }
-
-            $this->injectProperties($class, $reflection);
         }
 
         if (isset($rule['call'])) {
