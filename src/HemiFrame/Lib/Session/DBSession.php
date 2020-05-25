@@ -222,7 +222,7 @@ class DBSession implements \HemiFrame\Interfaces\Session
     {
         $this->id = md5(uniqid(__DIR__, true));
 
-        $stm = $this->getPdo()->prepare("INSERT INTO " . $this->getTableName() .  " SET sessionId=:sessionId, `name`=:name, `expiryDate`=:expiryDate");
+        $stm = $this->getPdo()->prepare("INSERT INTO " . $this->getTableName() .  " SET sessionId=:sessionId, `name`=:name, `expiryDate`= :expiryDate");
         $stm->bindValue(':sessionId', $this->getId());
         $stm->bindValue(':name', $this->getName());
         $stm->bindValue(':expiryDate', date("Y-m-d H:i:s", time() + $this->getLifeTime()));
@@ -246,7 +246,7 @@ class DBSession implements \HemiFrame\Interfaces\Session
     private function validate(): bool
     {
         if ($this->getId() != null) {
-            $stm = $this->getPdo()->prepare("SELECT * FROM " . $this->getTableName() .  " WHERE sessionId=:sessionId AND `name`=:name AND `expiryDate`>= expiryDate");
+            $stm = $this->getPdo()->prepare("SELECT * FROM " . $this->getTableName() .  " WHERE sessionId=:sessionId AND `name`=:name AND `expiryDate`>= :expiryDate");
             $stm->bindValue(':sessionId', $this->getId());
             $stm->bindValue(':name', $this->getName());
             $stm->bindValue(':expiryDate', date("Y-m-d H:i:s"));

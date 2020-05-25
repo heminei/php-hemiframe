@@ -53,7 +53,7 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
         $rule = [];
         $class = null;
 
-//        var_dump($name);
+        //        var_dump($name);
         if (isset($this->instances[$name])) {
             return $this->instances[$name];
         }
@@ -81,20 +81,19 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             if (!empty($constructor) && empty($arguments)) {
                 $constructorParams = $reflection->getConstructor()->getParameters();
                 foreach ($constructorParams as $param) {
-                    /* @var $param \ReflectionParameter */
+                    /** @var \ReflectionParameter $param */
                     if (!empty($param->getClass())) {
                         $arguments[] = $this->get($param->getClass()->getName());
                     } elseif ($param->isOptional()) {
                         $arguments[] = $param->getDefaultValue();
                     } else {
-//                        throw new Exception("Invalid constructor injection in " . $reflection->getName());
+                        //throw new Exception("Invalid constructor injection in " . $reflection->getName());
                     }
                 }
             }
-            if (empty($arguments)) {
-                $class = $reflection->newInstance();
-            } else {
-                $class = $reflection->newInstanceArgs($arguments);
+            $class = $reflection->newInstanceWithoutConstructor();
+            if (!empty($constructor)) {
+                call_user_func_array(array($class, '__construct'), $arguments);
             }
 
             $this->injectProperties($class, $reflection);
@@ -121,11 +120,11 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
         if ($reflection->getParentClass()) {
             $this->injectProperties($class, $reflection->getParentClass());
         }
-//        var_dump($reflection->getName());
+        //        var_dump($reflection->getName());
         foreach ($reflection->getProperties() as $property) {
-            /* @var $property \ReflectionProperty */
+            /** @var \ReflectionProperty $property */
             $docComment = $property->getDocComment();
-//            var_dump($property->getName());
+            //            var_dump($property->getName());
             if (!strstr($docComment, "@Inject")) {
                 continue;
             }
@@ -160,5 +159,4 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             $property->setValue($class, $this->get($injectName));
         }
     }
-
 }
