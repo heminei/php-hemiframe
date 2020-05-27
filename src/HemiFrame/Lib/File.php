@@ -110,8 +110,9 @@ class File
 	public function setDestinationPath(string $path, $mode = 0777): self
 	{
 		$this->destinationPath = $path;
-		if (!is_dir($path)) {
-			if (!mkdir($this->destinationPath, $mode, true)) {
+		$dir = dirname($path);
+		if (!is_dir($dir)) {
+			if (!mkdir($dir, $mode, true)) {
 				throw new \Exception("Can't generate destination path: $path");
 			}
 		}
@@ -121,19 +122,19 @@ class File
 
 	/**
 	 *
-	 * @param string $path
+	 * @param string $folder
 	 * @param int $mode
 	 * @return self
 	 * @throws \Exception
 	 */
-	public function generateDestinationPath(string $path, $mode = 0777): self
+	public function generateDestinationPath(string $folder, $mode = 0777): self
 	{
 		$y = date('Y');
 		$w = date('m');
 		$j = date('j');
-		$path = str_replace("//", "/", "$path/$y/$w/$j/");
+		$path = str_replace("//", "/", "$folder/$y/$w/$j/");
 		if (!file_exists($path) && !mkdir($path, $mode, true)) {
-			throw new \Exception("Can't generate destination path: $path");
+			throw new \Exception("Can't generate destination folder: $path");
 		}
 		$this->destinationPath = $path . $this->md5 . "." . $this->type;
 
