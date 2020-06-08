@@ -13,11 +13,11 @@ interface Cache
 
     public function setKeyPrefix(string $keyPrefix);
 
-    public function get(string $key);
+    public function get($key, $default = null);
 
-    public function set(string $key, $value, int $time);
+    public function set($key, $value, $time);
 
-    public function delete(string $key): bool;
+    public function delete($key): bool;
 
     public function exists(string $key): bool;
 }
