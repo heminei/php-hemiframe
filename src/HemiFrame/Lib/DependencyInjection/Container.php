@@ -7,7 +7,6 @@ namespace HemiFrame\Lib\DependencyInjection;
  */
 class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
 {
-
     private $rules = [];
     private $instances = [];
 
@@ -66,7 +65,7 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             }
             $class = $rule['instance']($name, $arguments);
             $className = null;
-        } else if (isset($rule['instanceOf'])) {
+        } elseif (isset($rule['instanceOf'])) {
             $className = $rule['instanceOf'];
         } else {
             $className = $name;
@@ -81,9 +80,12 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             if (!empty($constructor) && empty($arguments)) {
                 $constructorParams = $reflection->getConstructor()->getParameters();
                 foreach ($constructorParams as $param) {
-                    /** @var \ReflectionParameter $param */
-                    if (!empty($param->getClass())) {
-                        $arguments[] = $this->get($param->getClass()->getName());
+                    if (!empty($param->getType()) && $param->getType()->isBuiltin()) {
+                        continue;
+                    }
+                    $type = (string) $param->getType();
+                    if (!empty($type)) {
+                        $arguments[] = $this->get($type);
                     } elseif ($param->isOptional()) {
                         $arguments[] = $param->getDefaultValue();
                     } else {

@@ -243,7 +243,7 @@ class FFmpeg
     {
         $durationString = exec("ffmpeg -i '" . $this->getInputFile() . "'" . " 2<&1 | grep Duration: | cut -f2- -d: | cut -f1 -d, | tr -d ' '");
         $timeArray = explode(":", substr($durationString, 0, -3));
-        $seconds = $timeArray[0] * 60 * 60 + $timeArray[1] * 60 + $timeArray[2];
+        $seconds = intval($timeArray[0]) * 60 * 60 + intval($timeArray[1]) * 60 + intval($timeArray[2]);
         return $seconds;
     }
 
