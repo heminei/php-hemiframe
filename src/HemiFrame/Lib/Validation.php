@@ -7,7 +7,6 @@ namespace HemiFrame\Lib;
  */
 class Validation
 {
-
     private $data;
 
     public function __construct($string = null)

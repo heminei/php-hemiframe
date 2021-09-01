@@ -7,7 +7,6 @@ namespace HemiFrame\Lib;
  */
 class Router
 {
-
     private $requestUri = "";
     private $currentRoute = [];
     private $basePath = null;
@@ -22,6 +21,7 @@ class Router
     private $urlHosts = [];
     private $urlLangs = [];
     private $urlRedirects = [];
+    private $urlPriorities = [];
     private $cache = null;
     /**
      * @var array
@@ -191,16 +191,22 @@ class Router
 
                 foreach ($tokens as $key => $token) {
                     if (T_NAMESPACE === $token[0]) {
+                        var_dump($token);
                         $index = $key + 2; // Skip namespace keyword and whitespace
                         while (isset($tokens[$index]) && is_array($tokens[$index])) {
                             $namespace .= $tokens[$index++][1];
                         }
                     }
                     if (T_CLASS === $tokens[$key][0] && T_WHITESPACE === $tokens[$key + 1][0] && T_STRING === $tokens[$key + 2][0]) {
+                        if ($namespace == "\\") {
+                            $namespace = "";
+                        }
                         $classes[] = $namespace . '\\' . $tokens[$key + 2][1];
                     }
                 }
             }
+
+            // var_dump($classes);
 
             foreach ($classes as $class) {
                 $annotations = [];
@@ -315,7 +321,7 @@ class Router
             $lang = $array['lang'];
             $key = $lang . "." . $key;
         } else {
-            $lang = NULL;
+            $lang = null;
         }
         if (array_key_exists($key, $this->urlArray)) {
             throw new \InvalidArgumentException("$key - key exists");
@@ -328,6 +334,12 @@ class Router
             $this->urlHosts[$key] = $array['host'] . $this->host;
         } else {
             $this->urlHosts[$key] = $this->host;
+        }
+
+        if (isset($array['priority'])) {
+            $this->urlPriorities[$key] = intval($array['priority']);
+        } else {
+            $this->urlPriorities[$key] = 1;
         }
 
         $this->urlLangs[$key] = $lang;
@@ -363,7 +375,7 @@ class Router
             } else {
                 $lang = $this->getLang();
             }
-            if ($lang != NULL) {
+            if ($lang != null) {
                 if (isset($this->urlArray[$lang . "." . $key])) {
                     $urlString = $this->urlArray[$lang . "." . $key];
                 } else {
@@ -376,7 +388,7 @@ class Router
         } else {
             $key = $array;
 
-            if ($this->getLang() != NULL) {
+            if ($this->getLang() != null) {
                 if (isset($this->urlArray[$this->getLang() . "." . $key])) {
                     $urlString = $this->urlArray[$this->getLang() . "." . $key];
                 } else {
@@ -415,13 +427,13 @@ class Router
             throw new \InvalidArgumentException("Enter toUrl or toUrlKey");
         }
         if (!isset($array['toUrl'])) {
-            $array['toUrl'] = NULL;
+            $array['toUrl'] = null;
             if (!array_key_exists($array['toUrlKey'], $this->urlArray)) {
                 throw new \InvalidArgumentException("To URL key " . $array['toUrlKey'] . " not found.");
             }
         }
         if (!isset($array['toUrlKey'])) {
-            $array['toUrlKey'] = NULL;
+            $array['toUrlKey'] = null;
         }
 
         $vars = [];
@@ -448,10 +460,11 @@ class Router
     public function match(): array
     {
         $this->resetCurrentRoute();
+        $this->applyUrlPriorities();
 
         $url = $this->getRequestUri();
 
-        if ($this->getBasePath() !== NULL) {
+        if ($this->getBasePath() !== null) {
             if (substr($url, 0, strlen($this->getBasePath())) == $this->getBasePath()) {
                 $url = substr_replace($url, "", 0, strlen($this->getBasePath()));
             }
@@ -465,6 +478,9 @@ class Router
             }
         }
 
+        /**
+         * Check routes
+         */
         foreach ($this->urlArray as $key => $urlPreg) {
             $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\|number\}\}/i", "(?<$1>[0-9]+)", $urlPreg);
             $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\}\}/i", "(?<$1>[a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s\%\+'\",]+)", $urlPreg);
@@ -495,12 +511,18 @@ class Router
             if (isset($this->urlMethods[$key])) {
                 $this->currentRoute["method"] = $this->replaceVars($this->currentRoute["vars"], $this->urlMethods[$key]);
             }
+            if (isset($this->urlPriorities[$key])) {
+                $this->currentRoute["priority"] = $this->urlPriorities[$key];
+            }
 
             $this->currentRoute["class"] = $this->urlControllers[$key];
             break;
         }
 
-        if ($this->currentRoute["class"] === NULL && $this->currentRoute["method"] === NULL) {
+        /**
+         * Check redirects
+         */
+        if ($this->currentRoute["class"] === null && $this->currentRoute["method"] === null) {
             foreach ($this->urlRedirects as $redirect) {
                 $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\|number\}\}/i", "(?<$1>[0-9]+)", $redirect['fromUrl']);
                 $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\}\}/i", "([a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s]+)", $urlPreg);
@@ -508,7 +530,6 @@ class Router
 
                 $matches = [];
                 if (preg_match("/^\/?" . $this->patterns['lang'] . "$urlPreg\/?$/i", $url, $matches)) {
-
                     if (!empty($redirect['toUrl'])) {
                         $redirectToUrl = $redirect['toUrl'];
                     } else {
@@ -556,8 +577,24 @@ class Router
             "class" => null,
             "method" => null,
             "vars" => [],
-            "lang" => null
+            "lang" => null,
+            "priority" => null,
         ];
+
+        return $this;
+    }
+
+    private function applyUrlPriorities(): self
+    {
+        uksort($this->urlArray, function ($a, $b) {
+            if ($this->urlPriorities[$a] == $this->urlPriorities[$b]) {
+                return 0;
+            }
+            if ($this->urlPriorities[$a] > $this->urlPriorities[$b]) {
+                return -1;
+            }
+            return 1;
+        });
 
         return $this;
     }

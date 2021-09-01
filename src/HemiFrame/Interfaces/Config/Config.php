@@ -7,5 +7,4 @@ namespace HemiFrame\Interfaces\Config;
  */
 interface Config
 {
-
 }

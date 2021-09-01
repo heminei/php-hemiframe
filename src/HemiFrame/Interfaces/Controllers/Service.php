@@ -7,6 +7,5 @@ namespace HemiFrame\Interfaces\Controllers;
  */
 interface Service
 {
-
     public function index();
 }

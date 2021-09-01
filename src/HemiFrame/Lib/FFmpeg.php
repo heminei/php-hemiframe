@@ -7,12 +7,11 @@ namespace HemiFrame\Lib;
  */
 class FFmpeg
 {
-
     private $inputFile = null;
     private $outputFile = null;
     private $command = null;
-    private $options = array();
-    private $as = array(
+    private $options = [];
+    private $as = [
         'b' => 'bitrate',
         'r' => 'frameRate',
         'fs' => 'fileSizeLimit',
@@ -30,7 +29,7 @@ class FFmpeg
         'vframes' => 'videoFrames',
         'y' => 'overwrite',
         'log' => 'loglevel',
-    );
+    ];
 
     public function __construct()
     {
@@ -373,5 +372,4 @@ class FFmpeg
 
         return $this;
     }
-
 }

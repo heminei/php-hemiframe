@@ -8,7 +8,6 @@ namespace HemiFrame\Interfaces;
 
 interface Session
 {
-
     public function getId(): string;
 
     public function getName(): string;

@@ -7,9 +7,9 @@ namespace HemiFrame;
  */
 class Application
 {
-    const MODE_DEV = "dev";
-    const MODE_STAGE = "stage";
-    const MODE_PROD = "prod";
+    public const MODE_DEV = "dev";
+    public const MODE_STAGE = "stage";
+    public const MODE_PROD = "prod";
 
     private $mode = self::MODE_PROD;
     private $rootDir = "";

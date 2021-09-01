@@ -4,7 +4,6 @@ namespace HemiFrame\Lib\Cache;
 
 class Memcached implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
 {
-
     private $keyPrefix = "";
     private $defaultTtl = 120;
 

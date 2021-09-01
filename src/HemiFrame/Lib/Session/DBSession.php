@@ -7,7 +7,6 @@ namespace HemiFrame\Lib\Session;
  */
 class DBSession implements \HemiFrame\Interfaces\Session
 {
-
     private $id = "";
     private $name = "PHPSESSID";
     private $lifeTime = 3600;
@@ -17,7 +16,7 @@ class DBSession implements \HemiFrame\Interfaces\Session
     private $cookieHttpOnly = true;
     private $pdo = null;
     private $tableName = "sessions";
-    private $data = array();
+    private $data = [];
 
     public function __construct($sessionName = "PHPSESSID", $pdo = null)
     {

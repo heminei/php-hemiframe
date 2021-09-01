@@ -7,6 +7,5 @@ namespace HemiFrame\Interfaces;
  */
 interface Singleton
 {
-
     public static function instance();
 }

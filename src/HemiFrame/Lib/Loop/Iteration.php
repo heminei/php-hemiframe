@@ -7,7 +7,6 @@ namespace HemiFrame\Lib\Loop;
  */
 class Iteration
 {
-
     /**
      * @var int
      */

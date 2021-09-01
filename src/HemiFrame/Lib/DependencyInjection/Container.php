@@ -96,7 +96,7 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             $class = $reflection->newInstanceWithoutConstructor();
             $this->injectProperties($class, $reflection);
             if (!empty($constructor)) {
-                call_user_func_array(array($class, '__construct'), $arguments);
+                call_user_func_array([$class, '__construct'], $arguments);
             }
         }
 
@@ -105,7 +105,7 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
                 throw new Exception("Rule 'call' must be a array");
             }
             foreach ($rule['call'] as $key => $value) {
-                call_user_func_array(array($class, $key), $value);
+                call_user_func_array([$class, $key], $value);
             }
         }
 

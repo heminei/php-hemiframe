@@ -7,14 +7,12 @@ namespace HemiFrame;
  */
 class Autoloader
 {
-
     private static $loadedClasses = [];
     private static $namespaces = [];
     private static $directorySeparator = DIRECTORY_SEPARATOR;
 
     private function __construct()
     {
-
     }
 
     /**
@@ -31,7 +29,7 @@ class Autoloader
      */
     public static function register(): bool
     {
-        return spl_autoload_register(array(__CLASS__, "autoloader"));
+        return spl_autoload_register([__CLASS__, "autoloader"]);
     }
 
     /**
@@ -131,5 +129,4 @@ class Autoloader
     {
         self::$directorySeparator = $directorySeparator;
     }
-
 }

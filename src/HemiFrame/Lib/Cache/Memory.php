@@ -7,7 +7,6 @@ namespace HemiFrame\Lib\Cache;
  */
 class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
 {
-
     private static $data = [];
     private $keyPrefix = "";
     private $defaultTtl = 120;

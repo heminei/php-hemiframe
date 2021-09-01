@@ -7,7 +7,6 @@ namespace HemiFrame\Lib;
  */
 class Curl
 {
-
     private $curl;
     private $url;
     private $cookieFile = "/cache/curl_cookie.txt";

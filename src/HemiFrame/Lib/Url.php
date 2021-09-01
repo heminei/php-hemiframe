@@ -5,8 +5,8 @@ namespace HemiFrame\Lib;
 /**
  * @author heminei <heminei@heminei.com>
  */
-class Url {
-
+class Url
+{
     private $url = null;
     private $scheme = null;
     private $host = null;
@@ -17,17 +17,20 @@ class Url {
     private $query = null;
     private $fragment = null;
 
-    public function __construct($url = null) {
+    public function __construct($url = null)
+    {
         if ($url !== null) {
             $this->setUrl($url);
         }
     }
 
-    public function __toString() {
+    public function __toString()
+    {
         return $this->getUrl();
     }
 
-    public function parseUrl() {
+    public function parseUrl()
+    {
         $parseUrl = parse_url($this->url);
 
         $this->scheme = isset($parseUrl['scheme']) ? $parseUrl['scheme'] : null;
@@ -42,52 +45,62 @@ class Url {
         return $parseUrl;
     }
 
-    public function parseStr() {
+    public function parseStr()
+    {
         $array = [];
         parse_str($this->query, $array);
         return $array;
     }
 
-    public function setUrl(string $url): self {
+    public function setUrl(string $url): self
+    {
         $this->url = $url;
         $this->parseUrl();
         return $this;
     }
 
-    public function getUrl(): string {
+    public function getUrl(): string
+    {
         return $this->url;
     }
 
-    public function getScheme() {
+    public function getScheme()
+    {
         return $this->scheme;
     }
 
-    public function getHost() {
+    public function getHost()
+    {
         return $this->host;
     }
 
-    public function getPort() {
+    public function getPort()
+    {
         return $this->port;
     }
 
-    public function getUser() {
+    public function getUser()
+    {
         return $this->user;
     }
 
-    public function getPass() {
+    public function getPass()
+    {
         return $this->pass;
     }
 
-    public function getPath() {
+    public function getPath()
+    {
         return $this->path;
     }
 
-    public function getQuery() {
+    public function getQuery()
+    {
         return $this->query;
     }
 
-    public function getFragment() {
+    public function getFragment()
+    {
         return $this->fragment;
     }
-
 }

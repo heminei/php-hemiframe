@@ -4,7 +4,6 @@ namespace HemiFrame\Lib\Cache;
 
 class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
 {
-
     private $folder = "tmp/cache/";
     private $keyPrefix = "";
     private $defaultTtl = 120;
@@ -73,7 +72,8 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
         $data = [
             "expiryTime" => time() + $time,
             "value" => $value,
-        ];;
+        ];
+        ;
 
         return file_put_contents($this->getFile($key), serialize($data)) !== false;
     }
@@ -128,7 +128,7 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
             throw new \RuntimeException("Cache folder is not readable");
         }
 
-        $files = array_diff(scandir($this->getFolder()), array('.', '..'));
+        $files = array_diff(scandir($this->getFolder()), ['.', '..']);
         foreach ($files as $value) {
             $extension = pathinfo($value, PATHINFO_EXTENSION);
             if ($extension == 'cache') {

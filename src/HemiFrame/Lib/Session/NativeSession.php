@@ -7,7 +7,6 @@ namespace HemiFrame\Lib\Session;
  */
 class NativeSession implements \HemiFrame\Interfaces\Session
 {
-
     private $name = "PHPSESSID";
     private $lifeTime = 3600;
     private $cookiePath = "/";

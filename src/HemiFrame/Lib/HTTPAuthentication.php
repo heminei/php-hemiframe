@@ -7,84 +7,83 @@ namespace HemiFrame\Lib;
  */
 class HTTPAuthentication
 {
+    /**
+     *
+     * @var array
+     */
+    private $users = [];
 
-	/**
-	 *
-	 * @var array
-	 */
-	private $users = array();
+    /**
+     *
+     * @var string|null
+     */
+    private $message = null;
 
-	/**
-	 *
-	 * @var string|null
-	 */
-	private $message = NULL;
+    public function __construct(string $message = null)
+    {
+        if ($message !== null) {
+            $this->setMessage($message);
+        } else {
+            $this->setMessage("Access restricted");
+        }
+    }
 
-	public function __construct(string $message = NULL)
-	{
-		if ($message !== NULL) {
-			$this->setMessage($message);
-		} else {
-			$this->setMessage("Access restricted");
-		}
-	}
+    /**
+     *
+     * @return boolean
+     */
+    public function login()
+    {
+        if (isset($_SERVER['PHP_AUTH_USER']) and (array_key_exists($_SERVER['PHP_AUTH_USER'], $this->getUsers())
+            and $_SERVER['PHP_AUTH_PW'] == $this->users[$_SERVER['PHP_AUTH_USER']])) {
+            return true;
+        } else {
+            header('WWW-Authenticate: Basic realm="' . $this->getMessage() . '"');
+            header('HTTP/1.0 401 Unauthorized');
+            return false;
+        }
+    }
 
-	/**
-	 *
-	 * @return boolean
-	 */
-	public function login()
-	{
-		if (isset($_SERVER['PHP_AUTH_USER']) and (array_key_exists($_SERVER['PHP_AUTH_USER'], $this->getUsers())
-			and $_SERVER['PHP_AUTH_PW'] == $this->users[$_SERVER['PHP_AUTH_USER']])) {
-			return true;
-		} else {
-			header('WWW-Authenticate: Basic realm="' . $this->getMessage() . '"');
-			header('HTTP/1.0 401 Unauthorized');
-			return false;
-		}
-	}
+    /**
+     *
+     * @param string $user
+     * @param string $password
+     * @return \HemiFrame\Lib\HTTPAuthentication
+     */
+    public function addUser(string $user, string $password): self
+    {
+        $this->users[$user] = $password;
 
-	/**
-	 *
-	 * @param string $user
-	 * @param string $password
-	 * @return \HemiFrame\Lib\HTTPAuthentication
-	 */
-	public function addUser(string $user, string $password): self
-	{
-		$this->users[$user] = $password;
+        return $this;
+    }
 
-		return $this;
-	}
+    /**
+     *
+     * @return array
+     */
+    public function getUsers(): array
+    {
+        return $this->users;
+    }
 
-	/**
-	 *
-	 * @return array
-	 */
-	public function getUsers(): array
-	{
-		return $this->users;
-	}
+    /**
+     *
+     * @return string
+     */
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
 
-	/**
-	 *
-	 * @return string
-	 */
-	public function getMessage(): string
-	{
-		return $this->message;
-	}
+    /**
+     *
+     * @param string $message
+     * @return $this
+     */
+    public function setMessage(string $message): self
+    {
+        $this->message = $message;
 
-	/**
-	 *
-	 * @param string $message
-	 * @return $this
-	 */
-	public function setMessage(string $message): self
-	{
-		$this->message = $message;
-
-		return $this;
-	}
+        return $this;
+    }
 }

@@ -7,6 +7,5 @@ namespace HemiFrame\Interfaces\Config;
  */
 interface DataBase
 {
-
     public function getPdoInstance();
 }

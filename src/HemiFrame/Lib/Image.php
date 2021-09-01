@@ -103,7 +103,7 @@ class Image
     public function getSize(string $type = "B"): float
     {
         $size = $this->image->getImageLength();
-		
+
         if ($type == "KB") {
             return round($size / 1024, 2);
         } elseif ($type == "MB") {

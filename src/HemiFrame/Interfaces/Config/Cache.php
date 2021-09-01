@@ -7,7 +7,6 @@ namespace HemiFrame\Interfaces\Config;
  */
 interface Cache
 {
-
     public function getGlobalPrefix();
 
     public function getDefaultCacheTime();

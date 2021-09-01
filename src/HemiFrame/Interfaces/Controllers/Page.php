@@ -7,6 +7,5 @@ namespace HemiFrame\Interfaces\Controllers;
  */
 interface Page
 {
-
     public function index();
 }

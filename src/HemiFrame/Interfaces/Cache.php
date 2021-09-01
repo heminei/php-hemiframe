@@ -8,7 +8,6 @@ namespace HemiFrame\Interfaces;
 
 interface Cache
 {
-
     public function getKeyPrefix(): string;
 
     public function setKeyPrefix(string $keyPrefix);
