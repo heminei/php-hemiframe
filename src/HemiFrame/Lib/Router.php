@@ -191,7 +191,6 @@ class Router
 
                 foreach ($tokens as $key => $token) {
                     if (T_NAMESPACE === $token[0]) {
-                        var_dump($token);
                         $index = $key + 2; // Skip namespace keyword and whitespace
                         while (isset($tokens[$index]) && is_array($tokens[$index])) {
                             $namespace .= $tokens[$index++][1];
@@ -205,8 +204,6 @@ class Router
                     }
                 }
             }
-
-            // var_dump($classes);
 
             foreach ($classes as $class) {
                 $annotations = [];
