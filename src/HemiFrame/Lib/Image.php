@@ -75,6 +75,11 @@ class Image
         return $this->image;
     }
 
+    public function setImagickObject(\Imagick $imagick)
+    {
+        $this->image = $imagick;
+    }
+
     public function getImage(): string
     {
         return (string) $this->image->getImagesBlob();
