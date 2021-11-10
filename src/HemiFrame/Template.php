@@ -256,8 +256,11 @@ class Template
         return $this->html;
     }
 
-    private function strReplaceFirst(string $search, string $replace, string $subject): string
+    private function strReplaceFirst(?string $search, string $replace, string $subject): string
     {
+        if ($search === null) {
+            return $subject;
+        }
         $pos = strpos($subject, $search);
         if ($pos !== false) {
             $subject = substr_replace($subject, $replace, $pos, strlen($search));
@@ -286,9 +289,7 @@ class Template
         $countOpenTags = 0;
         $innerHtml = "";
         foreach ($endArray as $key => $value) {
-            if (strstr($value, "<" .  $tag . " ")) {
-                $countOpenTags++;
-            }
+            $countOpenTags = $countOpenTags + substr_count($value, "<" .  $tag . " ");
             $innerHtml .= $value;
             if ($key == $countOpenTags) {
                 break;
