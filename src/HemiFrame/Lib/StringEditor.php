@@ -9,7 +9,7 @@ namespace HemiFrame\Lib;
  */
 class StringEditor
 {
-    private $string = null;
+    private $string = '';
     private $encoding = "UTF-8";
 
     public function __construct($string = null)
