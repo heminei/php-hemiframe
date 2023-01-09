@@ -41,10 +41,10 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
     }
 
     /**
-     *
-     * @param string $name
+     * @template T
+     * @param class-string<T> $name
      * @param array $arguments
-     * @return mixed
+     * @return T
      * @throws Exception
      */
     public function get(string $name, array $arguments = [])
