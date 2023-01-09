@@ -4,8 +4,6 @@ namespace HemiFrame\Lib;
 
 class Image
 {
-    private $file = null;
-
     /**
      *
      * @var \Imagick
@@ -33,7 +31,6 @@ class Image
 
     public function load(string $img)
     {
-        $this->file = $img;
         $this->image = new \Imagick($img);
         if ($this->getType() == "gif") {
             $this->image = $this->image->coalesceImages();

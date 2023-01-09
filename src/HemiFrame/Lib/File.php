@@ -48,7 +48,7 @@ class File
             $this->name = $pathinfo['basename'];
             $this->size = filesize($file);
             $this->mimeType = mime_content_type($file);
-        /* @phpstan-ignore-next-line */
+            /* @phpstan-ignore-next-line */
         } elseif ($file instanceof \Psr\Http\Message\UploadedFileInterface) {
             /** @var \Psr\Http\Message\UploadedFileInterface $file */
             $pathinfo = pathinfo($file->getClientFilename());

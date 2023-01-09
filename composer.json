@@ -1,7 +1,7 @@
 {
     "name": "hemiframe/hemiframe",
     "description": "PHP micro framework",
-    "version": "3.3.3",
+    "version": "3.3.4",
     "keywords": [
         "PHP",
         "framework",
@@ -31,8 +31,8 @@
         "psr/http-message": "^1.0"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.0",
-        "phpstan/phpstan": "~0.12.97"
+        "friendsofphp/php-cs-fixer": "^3.13",
+        "phpstan/phpstan": "~1.9"
     },
     "scripts": {
         "php-cs-fixer": "php-cs-fixer fix --dry-run --verbose",

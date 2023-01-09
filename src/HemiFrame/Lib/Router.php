@@ -19,7 +19,6 @@ class Router
     private $urlControllers = [];
     private $urlMethods = [];
     private $urlHosts = [];
-    private $urlLangs = [];
     private $urlRedirects = [];
     private $urlPriorities = [];
     private $cache = null;
@@ -338,8 +337,6 @@ class Router
         } else {
             $this->urlPriorities[$key] = 1;
         }
-
-        $this->urlLangs[$key] = $lang;
 
         if (isset($array['method'])) {
             $this->urlMethods[$key] = $array['method'];

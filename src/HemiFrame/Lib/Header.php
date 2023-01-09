@@ -140,4 +140,12 @@ class Header
     {
         header($this->header);
     }
+
+    /**
+     * Get the value of code
+     */
+    public function getCode()
+    {
+        return $this->code;
+    }
 }

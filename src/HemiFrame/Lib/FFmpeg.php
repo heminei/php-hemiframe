@@ -11,25 +11,6 @@ class FFmpeg
     private $outputFile = null;
     private $command = null;
     private $options = [];
-    private $as = [
-        'b' => 'bitrate',
-        'r' => 'frameRate',
-        'fs' => 'fileSizeLimit',
-        'f' => 'forceFormat',
-        'force' => 'forceFormat',
-        'i' => 'input',
-        's' => 'size',
-        'ar' => 'audioSamplingFrequency',
-        'ab' => 'audioBitrate',
-        'acodec' => 'audioCodec',
-        'vcodec' => 'videoCodec',
-        'std' => 'redirectOutput',
-        'unset' => '_unset',
-        'number' => 'videoFrames',
-        'vframes' => 'videoFrames',
-        'y' => 'overwrite',
-        'log' => 'loglevel',
-    ];
 
     public function __construct()
     {
