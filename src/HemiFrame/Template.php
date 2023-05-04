@@ -224,10 +224,16 @@ class Template
         foreach ($this->vars as $key => $value) {
             if (is_array($value) or is_object($value)) {
                 foreach ($value as $key1 => $value1) {
+                    if ($value1 === null) {
+                        $value1 = "";
+                    }
                     $tagToReplace = "{{" . $key . "." . $key1 . "}}";
                     $this->html = str_replace($tagToReplace, $value1, $this->html);
                 }
             } else {
+                if ($value === null) {
+                    $value = "";
+                }
                 $tagToReplace = "{{" . $key . "}}";
                 $this->html = str_replace($tagToReplace, $value, $this->html);
             }
