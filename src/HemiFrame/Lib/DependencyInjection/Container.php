@@ -76,6 +76,12 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             }
 
             $reflection = new \ReflectionClass($className);
+
+            $docComment = $reflection->getDocComment();
+            if (strstr($docComment, '@Singleton')) {
+                $rule['singleton'] = true;
+            }
+
             $constructor = $reflection->getConstructor();
             if (!empty($constructor) && empty($arguments)) {
                 $constructorParams = $reflection->getConstructor()->getParameters();
