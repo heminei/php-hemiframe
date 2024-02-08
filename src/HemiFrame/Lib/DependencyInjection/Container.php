@@ -2,6 +2,8 @@
 
 namespace HemiFrame\Lib\DependencyInjection;
 
+use HemiFrame\Lib\DependencyInjection\Attributes\Singleton;
+
 /**
  * @author heminei <heminei@heminei.com>
  */
@@ -11,10 +13,8 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
     private $instances = [];
 
     /**
-     *
-     * @param string $name
-     * @param array $rules
      * @return $this
+     *
      * @throws Exception
      */
     public function setRule(string $name, array $rules)
@@ -27,24 +27,22 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
         return $this;
     }
 
-    /**
-     *
-     * @param string $name
-     * @return array
-     */
     public function getRule(string $name): array
     {
         if (isset($this->rules[$name])) {
             return $this->rules[$name];
         }
+
         return [];
     }
 
     /**
      * @template T
+     *
      * @param class-string<T> $name
-     * @param array $arguments
+     *
      * @return T
+     *
      * @throws Exception
      */
     public function get(string $name, array $arguments = [])
@@ -81,12 +79,28 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             if (strstr($docComment, '@Singleton')) {
                 $rule['singleton'] = true;
             }
+            if (!empty($reflection->getAttributes(Singleton::class))) {
+                $rule['singleton'] = true;
+            }
+
+            $parentClass = $reflection->getParentClass();
+            if (!empty($parentClass)) {
+                $parentDocComment = $parentClass->getDocComment();
+                if (strstr($parentDocComment, '@Singleton')) {
+                    $rule['singleton'] = true;
+                }
+                if (!empty($parentClass->getAttributes(Singleton::class))) {
+                    $rule['singleton'] = true;
+                }
+            }
 
             $constructor = $reflection->getConstructor();
             if (!empty($constructor) && empty($arguments)) {
                 $constructorParams = $reflection->getConstructor()->getParameters();
                 foreach ($constructorParams as $param) {
-                    if (!empty($param->getType()) && $param->getType()->isBuiltin()) {
+                    /** @var \ReflectionNamedType|null $type */
+                    $type = $param->getType();
+                    if (!empty($type) && $type->isBuiltin()) {
                         continue;
                     }
                     $type = (string) $param->getType();
@@ -95,7 +109,7 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
                     } elseif ($param->isOptional()) {
                         $arguments[] = $param->getDefaultValue();
                     } else {
-                        //throw new Exception("Invalid constructor injection in " . $reflection->getName());
+                        // throw new Exception("Invalid constructor injection in " . $reflection->getName());
                     }
                 }
             }
@@ -115,7 +129,7 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             }
         }
 
-        if (isset($rule['singleton']) && $rule['singleton'] == true) {
+        if (isset($rule['singleton']) && true == $rule['singleton']) {
             $this->instances[$name] = $class;
         }
 
@@ -132,21 +146,21 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             /** @var \ReflectionProperty $property */
             $docComment = $property->getDocComment();
             //            var_dump($property->getName());
-            if (!strstr($docComment, "@Inject")) {
+            if (!strstr($docComment, '@Inject')) {
                 continue;
             }
             $injectName = null;
             $lines = explode("\n", $docComment);
             foreach ($lines as $line) {
-                if (strstr($line, "@Inject")) {
-                    $stringArray = explode("@Inject ", $line);
+                if (strstr($line, '@Inject')) {
+                    $stringArray = explode('@Inject ', $line);
                     if (isset($stringArray[1])) {
                         $injectName = trim($stringArray[1]);
                         break;
                     }
                 }
-                if (strstr($line, "@var")) {
-                    $stringArray = explode("@var ", $line);
+                if (strstr($line, '@var')) {
+                    $stringArray = explode('@var ', $line);
                     if (isset($stringArray[1])) {
                         $injectName = trim($stringArray[1]);
                         break;
@@ -154,12 +168,12 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
                 }
             }
             if (empty($injectName)) {
-                throw new Exception("Invalid property injection in " . $reflection->getName() . ", property name: " . $property->getName());
+                throw new Exception('Invalid property injection in '.$reflection->getName().', property name: '.$property->getName());
             }
-            if (strpos($injectName, "\\") === 0) {
+            if (0 === strpos($injectName, '\\')) {
                 $injectName = substr($injectName, 1);
             } else {
-                $injectName = $reflection->getNamespaceName() . "\\" . $injectName;
+                $injectName = $reflection->getNamespaceName().'\\'.$injectName;
             }
 
             $property->setAccessible(true);

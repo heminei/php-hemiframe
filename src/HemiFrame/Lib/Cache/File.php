@@ -4,8 +4,8 @@ namespace HemiFrame\Lib\Cache;
 
 class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
 {
-    private $folder = "tmp/cache/";
-    private $keyPrefix = "";
+    private $folder = 'tmp/cache/';
+    private $keyPrefix = '';
     private $defaultTtl = 120;
 
     public function getFolder(): string
@@ -14,9 +14,8 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
     }
 
     /**
-     *
-     * @param string $folder
      * @return $this
+     *
      * @throws \Exception
      */
     public function setFolder(string $folder): self
@@ -24,7 +23,7 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
         if (!is_writable($folder)) {
             throw new \Exception("Folder is not writable ($folder)");
         }
-        $this->folder = str_replace("//", "/", $folder . "/");
+        $this->folder = str_replace('//', '/', $folder.'/');
 
         return $this;
     }
@@ -44,49 +43,45 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
     public function getFile(string $key): string
     {
         if (empty($key)) {
-            throw new \Exception("Enter key");
+            throw new \Exception('Enter key');
         }
-        return $this->folder . md5($this->keyPrefix . $key) . ".cache";
+
+        return $this->folder.md5($this->keyPrefix.$key).'.cache';
     }
 
     /**
-     *
      * @param string $key
-     * @param mixed $value
-     * @param int $time
-     * @return bool
+     * @param int    $time
+     *
      * @throws InvalidArgumentException
      */
     public function set($key, $value, $time = null): bool
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Enter key");
+            throw new InvalidArgumentException('Enter key');
         }
-        if ($time === null) {
+        if (null === $time) {
             $time = $this->defaultTtl;
         }
 
         if (!is_writable($this->getFolder())) {
-            throw new \RuntimeException("Can't be save file: " . $this->getFile($key));
+            throw new \RuntimeException("Can't be save file: ".$this->getFile($key));
         }
         $data = [
-            "expiryTime" => time() + $time,
-            "value" => $value,
+            'expiryTime' => time() + $time,
+            'value' => $value,
         ];
-        ;
 
-        return file_put_contents($this->getFile($key), serialize($data)) !== false;
+        return false !== file_put_contents($this->getFile($key), serialize($data));
     }
 
     /**
      * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
     public function get($key, $default = null)
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Key is empty");
+            throw new InvalidArgumentException('Key is empty');
         }
         if (!is_readable($this->getFile($key))) {
             return $default;
@@ -104,34 +99,33 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
 
     /**
      * @param string $key
-     * @return bool
+     *
      * @throws InvalidArgumentException
      */
     public function delete($key): bool
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Enter key");
+            throw new InvalidArgumentException('Enter key');
         }
         if (file_exists($this->getFile($key))) {
             unlink($this->getFile($key));
+
             return true;
         }
+
         return false;
     }
 
-    /**
-     * @return boolean
-     */
     public function clear(): bool
     {
         if (!is_readable($this->getFolder())) {
-            throw new \RuntimeException("Cache folder is not readable");
+            throw new \RuntimeException('Cache folder is not readable');
         }
 
         $files = array_diff(scandir($this->getFolder()), ['.', '..']);
         foreach ($files as $value) {
             $extension = pathinfo($value, PATHINFO_EXTENSION);
-            if ($extension == 'cache') {
+            if ('cache' == $extension) {
                 unset($value);
             }
         }
@@ -140,15 +134,14 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
     }
 
     /**
-     *
      * @param string $key
-     * @return bool
+     *
      * @throws InvalidArgumentException
      */
     public function has($key): bool
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Enter key");
+            throw new InvalidArgumentException('Enter key');
         }
         if (!is_readable($this->getFile($key))) {
             return false;
@@ -159,12 +152,11 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
         if ($data['expiryTime'] > time()) {
             return true;
         }
+
         return false;
     }
 
     /**
-     * @param string $key
-     * @return bool
      * @throws InvalidArgumentException
      */
     public function exists(string $key): bool
@@ -174,13 +166,11 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
 
     /**
      * @param array $keys
-     * @param mixed $default
-     * @return array
      */
     public function getMultiple($keys, $default = null): array
     {
         if (!is_array($keys)) {
-            throw new InvalidArgumentException("Keys must be array");
+            throw new InvalidArgumentException('Keys must be array');
         }
 
         $data = [];
@@ -194,12 +184,12 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
     public function setMultiple($values, $ttl = null): bool
     {
         if (!is_array($values)) {
-            throw new InvalidArgumentException("Values must be array");
+            throw new InvalidArgumentException('Values must be array');
         }
 
         $result = true;
         foreach ($values as $key => $value) {
-            if ($this->set($key, $value, $ttl) == false) {
+            if (false == $this->set($key, $value, $ttl)) {
                 $result = false;
             }
         }
@@ -210,7 +200,7 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
     public function deleteMultiple($keys)
     {
         if (!is_array($keys)) {
-            throw new InvalidArgumentException("Keys must be array");
+            throw new InvalidArgumentException('Keys must be array');
         }
 
         foreach ($keys as $key) {

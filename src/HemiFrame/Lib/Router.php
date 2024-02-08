@@ -2,18 +2,20 @@
 
 namespace HemiFrame\Lib;
 
+use HemiFrame\Lib\Routing\Attributes\Route;
+
 /**
  * @author heminei <heminei@heminei.com>
  */
 class Router
 {
-    private $requestUri = "";
+    private $requestUri = '';
     private $currentRoute = [];
-    private $basePath = null;
-    private $host = null;
-    private $defaultClass = null;
-    private $defaultMethod = null;
-    private $lang = "";
+    private $basePath;
+    private $host;
+    private $defaultClass;
+    private $defaultMethod;
+    private $lang = '';
     private $urlArray = [];
     private $urlVars = [];
     private $urlControllers = [];
@@ -21,13 +23,13 @@ class Router
     private $urlHosts = [];
     private $urlRedirects = [];
     private $urlPriorities = [];
-    private $cache = null;
+    private $cache;
     /**
      * @var array
      */
     private $patterns = [
-        "vars" => "\{\{(?<name>[a-zA-Z0-9]+)(\|(?<type>[a-zA-Z0-9]+))?\}\}",
-        "lang" => "(?<lang>[a-z0-9]{1,2})?",
+        'vars' => "\{\{(?<name>[a-zA-Z0-9]+)(\|(?<type>[a-zA-Z0-9]+))?\}\}",
+        'lang' => '(?<lang>[a-z0-9]{1,2})?',
     ];
 
     public function __construct()
@@ -46,10 +48,10 @@ class Router
 
     public function setRequestUri(string $requestUri): self
     {
-        $requestUri = explode("?", $requestUri);
+        $requestUri = explode('?', $requestUri);
         $requestUri = $requestUri[0];
         $requestUri = urldecode($requestUri);
-        $requestUri = iconv(mb_detect_encoding($requestUri, mb_detect_order(), true), "UTF-8", $requestUri);
+        $requestUri = iconv(mb_detect_encoding($requestUri, mb_detect_order(), true), 'UTF-8', $requestUri);
         $this->requestUri = $requestUri;
 
         return $this;
@@ -117,8 +119,7 @@ class Router
     }
 
     /**
-     * Get regex patterns
-     * @return array
+     * Get regex patterns.
      */
     public function getPatterns(): array
     {
@@ -128,7 +129,7 @@ class Router
     public function setPattern(string $key, string $value): self
     {
         if (!array_key_exists($key, $this->patterns)) {
-            throw new \InvalidArgumentException("Invalid pattern key: " . $key);
+            throw new \InvalidArgumentException('Invalid pattern key: '.$key);
         }
 
         $this->patterns[$key] = $value;
@@ -136,18 +137,11 @@ class Router
         return $this;
     }
 
-    /**
-     * @return \HemiFrame\Interfaces\Cache|null
-     */
     public function getCache(): ?\HemiFrame\Interfaces\Cache
     {
         return $this->cache;
     }
 
-    /**
-     * @param \HemiFrame\Interfaces\Cache|null $cache
-     * @return self
-     */
     public function setCache(?\HemiFrame\Interfaces\Cache $cache): self
     {
         $this->cache = $cache;
@@ -155,19 +149,13 @@ class Router
         return $this;
     }
 
-    /**
-     * @param string $path
-     * @param integer $cacheTime
-     * @param string|null $cacheKey
-     * @return array
-     */
     public function scanDirectory(string $path, int $cacheTime = 300, ?string $cacheKey = null): array
     {
         if (!is_readable($path)) {
-            throw new \InvalidArgumentException("Patch is not readable: " . $path);
+            throw new \InvalidArgumentException('Patch is not readable: '.$path);
         }
-        if ($cacheKey === null) {
-            $cacheKey = "router-directory-scan-" . md5($path . __FILE__);
+        if (null === $cacheKey) {
+            $cacheKey = 'router-directory-scan-'.md5($path.__FILE__);
         }
         $isCached = false;
         $routes = [];
@@ -178,7 +166,7 @@ class Router
             }
         }
 
-        if ($isCached == false) {
+        if (false == $isCached) {
             $allFiles = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
             $files = new \RegexIterator($allFiles, '/\.php$/');
 
@@ -186,7 +174,7 @@ class Router
             foreach ($files as $file) {
                 /** @var \SplFileInfo $file */
                 $tokens = token_get_all(file_get_contents($file->getRealPath()));
-                $namespace = "\\";
+                $namespace = '\\';
 
                 foreach ($tokens as $key => $token) {
                     if (T_NAMESPACE === $token[0]) {
@@ -196,28 +184,47 @@ class Router
                         }
                     }
                     if (T_CLASS === $tokens[$key][0] && T_WHITESPACE === $tokens[$key + 1][0] && T_STRING === $tokens[$key + 2][0]) {
-                        if ($namespace == "\\") {
-                            $namespace = "";
+                        if ('\\' == $namespace) {
+                            $namespace = '';
                         }
-                        $classes[] = $namespace . '\\' . $tokens[$key + 2][1];
+                        $classes[] = $namespace.'\\'.$tokens[$key + 2][1];
                     }
                 }
             }
 
             foreach ($classes as $class) {
                 $annotations = [];
+                $attributes = [];
+
                 $rc = new \ReflectionClass($class);
-                if (!empty($rc->getDocComment())) {
-                    $annotations[] = [
-                        "comment" => $rc->getDocComment(),
-                        "method" => null,
+
+                foreach ($rc->getAttributes(Route::class) as $attribute) {
+                    $attributes[] = [
+                        'attribute' => $attribute,
+                        'method' => null,
                     ];
                 }
+                if (!empty($rc->getDocComment())) {
+                    $annotations[] = [
+                        'comment' => $rc->getDocComment(),
+                        'method' => null,
+                    ];
+                }
+
+                /*
+                 * Check methods
+                 */
                 foreach ($rc->getMethods() as $method) {
                     if (!empty($method->getDocComment())) {
                         $annotations[] = [
-                            "comment" => $method->getDocComment(),
-                            "method" => $method->getName(),
+                            'comment' => $method->getDocComment(),
+                            'method' => $method->getName(),
+                        ];
+                    }
+                    foreach ($method->getAttributes(Route::class) as $attribute) {
+                        $attributes[] = [
+                            'attribute' => $attribute,
+                            'method' => $method->getName(),
                         ];
                     }
                 }
@@ -225,16 +232,16 @@ class Router
                 foreach ($annotations as $annotation) {
                     $lines = explode("\n", $annotation['comment']);
                     foreach ($lines as $line) {
-                        if (strstr($line, "@Route({")) {
-                            $stringArray = explode("@Route({", $line);
-                            $json = trim("{" . $stringArray[1]);
-                            $json = rtrim($json, "})") . "}";
+                        if (strstr($line, '@Route({')) {
+                            $stringArray = explode('@Route({', $line);
+                            $json = trim('{'.$stringArray[1]);
+                            $json = rtrim($json, '})').'}';
 
                             $array = json_decode($json, true);
                             $jsonError = \json_last_error_msg();
 
-                            if ($jsonError != "No error" || !is_array($array)) {
-                                throw new \RuntimeException("Invalid @Route annotation on class " . $class . ": " . $json);
+                            if ('No error' != $jsonError || !is_array($array)) {
+                                throw new \RuntimeException('Invalid @Route annotation on class '.$class.': '.$json);
                             }
 
                             if (!isset($array['controller'])) {
@@ -244,18 +251,35 @@ class Router
                                 $array['method'] = $annotation['method'];
                             }
                             if (!isset($array['key'])) {
-                                throw new \InvalidArgumentException("Enter @Route key annotation on class " . $class . ": " . $json);
+                                throw new \InvalidArgumentException('Enter @Route key annotation on class '.$class.': '.$json);
                             }
                             if (!isset($array['url'])) {
-                                throw new \InvalidArgumentException("Enter @Route url annotation on class " . $class . ": " . $json);
+                                throw new \InvalidArgumentException('Enter @Route url annotation on class '.$class.': '.$json);
                             }
 
                             $routes[] = [
-                                "class" => $class,
-                                "settings" => $array,
+                                'class' => $class,
+                                'settings' => $array,
                             ];
                         }
                     }
+                }
+                foreach ($attributes as $attribute) {
+                    /** @var Route $attributeInstance */
+                    $attributeInstance = $attribute['attribute']->newInstance();
+
+                    $routes[] = [
+                        'class' => $class,
+                        'settings' => [
+                        'controller' => $class,
+                        'method' => $attribute['method'],
+                        'key' => $attributeInstance->key,
+                        'url' => $attributeInstance->url,
+                        'lang' => $attributeInstance->lang,
+                        'host' => $attributeInstance->host,
+                        'priority' => $attributeInstance->priority,
+                        ],
+                    ];
                 }
             }
         }
@@ -271,43 +295,37 @@ class Router
         return $routes;
     }
 
-    /**
-     * @param string $path
-     * @param string|null $cacheKey
-     * @return boolean
-     */
     public function clearScanDirectoryCache(string $path, ?string $cacheKey = null): bool
     {
         if (!is_readable($path)) {
-            throw new \InvalidArgumentException("Path is not readable: " . $path);
+            throw new \InvalidArgumentException('Path is not readable: '.$path);
         }
         if (empty($this->cache)) {
             return false;
         }
 
-        if ($cacheKey === null) {
-            $cacheKey = "router-directory-scan-" . md5($path . __FILE__);
+        if (null === $cacheKey) {
+            $cacheKey = 'router-directory-scan-'.md5($path.__FILE__);
         }
 
-        return  $this->cache->delete($cacheKey);
+        return $this->cache->delete($cacheKey);
     }
 
     /**
-     *
-     * @param array $array
      * @return $this
+     *
      * @throws \InvalidArgumentException
      */
     public function setRoute(array $array): self
     {
         if (!isset($array['key'])) {
-            throw new \InvalidArgumentException("Enter key");
+            throw new \InvalidArgumentException('Enter key');
         }
         if (!isset($array['url'])) {
-            throw new \InvalidArgumentException("Enter url");
+            throw new \InvalidArgumentException('Enter url');
         }
         if (!isset($array['controller'])) {
-            throw new \InvalidArgumentException("Enter controller");
+            throw new \InvalidArgumentException('Enter controller');
         }
         $key = $array['key'];
         $url = $array['url'];
@@ -315,7 +333,7 @@ class Router
 
         if (isset($array['lang'])) {
             $lang = $array['lang'];
-            $key = $lang . "." . $key;
+            $key = $lang.'.'.$key;
         } else {
             $lang = null;
         }
@@ -327,7 +345,7 @@ class Router
         $this->urlControllers[$key] = $class;
 
         if (isset($array['host'])) {
-            $this->urlHosts[$key] = $array['host'] . $this->host;
+            $this->urlHosts[$key] = $array['host'].$this->host;
         } else {
             $this->urlHosts[$key] = $this->host;
         }
@@ -342,7 +360,7 @@ class Router
             $this->urlMethods[$key] = $array['method'];
         }
 
-        $find = "/" . $this->patterns['vars'] . "/i";
+        $find = '/'.$this->patterns['vars'].'/i';
         $vars = null;
         preg_match_all($find, $url, $vars);
         foreach ($vars['name'] as $row) {
@@ -354,7 +372,6 @@ class Router
 
     /**
      * @param string|array $array
-     * @return string
      */
     public function getRoute($array): string
     {
@@ -369,44 +386,44 @@ class Router
             } else {
                 $lang = $this->getLang();
             }
-            if ($lang != null) {
-                if (isset($this->urlArray[$lang . "." . $key])) {
-                    $urlString = $this->urlArray[$lang . "." . $key];
+            if (null != $lang) {
+                if (isset($this->urlArray[$lang.'.'.$key])) {
+                    $urlString = $this->urlArray[$lang.'.'.$key];
                 } else {
                     $urlString = $this->urlArray[$key];
                 }
-                $urlString = "/" . $lang . $urlString;
+                $urlString = '/'.$lang.$urlString;
             } else {
                 $urlString = $this->urlArray[$key];
             }
         } else {
             $key = $array;
 
-            if ($this->getLang() != null) {
-                if (isset($this->urlArray[$this->getLang() . "." . $key])) {
-                    $urlString = $this->urlArray[$this->getLang() . "." . $key];
+            if (null != $this->getLang()) {
+                if (isset($this->urlArray[$this->getLang().'.'.$key])) {
+                    $urlString = $this->urlArray[$this->getLang().'.'.$key];
                 } else {
                     $urlString = $this->urlArray[$key];
                 }
-                $urlString = "/" . $this->getLang() . $urlString;
+                $urlString = '/'.$this->getLang().$urlString;
             } else {
                 $urlString = $this->urlArray[$key];
             }
         }
 
-
         $scriptNamePos = strpos($this->getRequestUri(), $_SERVER['SCRIPT_NAME']);
-        if ($scriptNamePos === 0) {
-            $urlString = $_SERVER['SCRIPT_NAME'] . $urlString;
+        if (0 === $scriptNamePos) {
+            $urlString = $_SERVER['SCRIPT_NAME'].$urlString;
         }
 
         if (is_array($vars)) {
             foreach ($vars as $k => $v) {
-                $urlString = str_replace("{{" . $k . "}}", urlencode($v), $urlString);
-                $urlString = str_replace("{{" . $k . "|number}}", urlencode($v), $urlString);
+                $urlString = str_replace('{{'.$k.'}}', urlencode($v), $urlString);
+                $urlString = str_replace('{{'.$k.'|number}}', urlencode($v), $urlString);
             }
         }
-        return $this->getBasePath() . $urlString;
+
+        return $this->getBasePath().$urlString;
     }
 
     public function setRedirect(array $array): self
@@ -415,15 +432,15 @@ class Router
             $array['statusCode'] = 301;
         }
         if (!isset($array['fromUrl'])) {
-            throw new \InvalidArgumentException("Enter fromUrl");
+            throw new \InvalidArgumentException('Enter fromUrl');
         }
         if (!isset($array['toUrl']) && !isset($array['toUrlKey'])) {
-            throw new \InvalidArgumentException("Enter toUrl or toUrlKey");
+            throw new \InvalidArgumentException('Enter toUrl or toUrlKey');
         }
         if (!isset($array['toUrl'])) {
             $array['toUrl'] = null;
             if (!array_key_exists($array['toUrlKey'], $this->urlArray)) {
-                throw new \InvalidArgumentException("To URL key " . $array['toUrlKey'] . " not found.");
+                throw new \InvalidArgumentException('To URL key '.$array['toUrlKey'].' not found.');
             }
         }
         if (!isset($array['toUrlKey'])) {
@@ -432,25 +449,21 @@ class Router
 
         $vars = [];
         $varNames = [];
-        preg_match_all("/" . $this->patterns['vars'] . "/i", $array['fromUrl'], $vars);
+        preg_match_all('/'.$this->patterns['vars'].'/i', $array['fromUrl'], $vars);
         foreach ($vars['name'] as $row) {
             $varNames[] = $row;
         }
         $this->urlRedirects[] = [
-            "fromUrl" => $array['fromUrl'],
-            "toUrl" => $array['toUrl'],
-            "toUrlKey" => $array['toUrlKey'],
-            "statusCode" => $array['statusCode'],
-            "vars" => $varNames
+            'fromUrl' => $array['fromUrl'],
+            'toUrl' => $array['toUrl'],
+            'toUrlKey' => $array['toUrlKey'],
+            'statusCode' => $array['statusCode'],
+            'vars' => $varNames,
         ];
 
         return $this;
     }
 
-    /**
-     *
-     * @return array
-     */
     public function match(): array
     {
         $this->resetCurrentRoute();
@@ -458,98 +471,98 @@ class Router
 
         $url = $this->getRequestUri();
 
-        if ($this->getBasePath() !== null) {
+        if (null !== $this->getBasePath()) {
             if (substr($url, 0, strlen($this->getBasePath())) == $this->getBasePath()) {
-                $url = substr_replace($url, "", 0, strlen($this->getBasePath()));
+                $url = substr_replace($url, '', 0, strlen($this->getBasePath()));
             }
         }
 
         $scriptNamePos = strpos($url, $_SERVER['SCRIPT_NAME']);
-        if ($scriptNamePos === 0) {
-            $url = substr_replace($url, "", 0, strlen($_SERVER['SCRIPT_NAME']));
-            if (strlen($url) === 0) {
-                $url .= "/";
+        if (0 === $scriptNamePos) {
+            $url = substr_replace($url, '', 0, strlen($_SERVER['SCRIPT_NAME']));
+            if (0 === strlen($url)) {
+                $url .= '/';
             }
         }
 
-        /**
+        /*
          * Check routes
          */
         foreach ($this->urlArray as $key => $urlPreg) {
-            $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\|number\}\}/i", "(?<$1>[0-9]+)", $urlPreg);
+            $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\|number\}\}/i", '(?<$1>[0-9]+)', $urlPreg);
             $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\}\}/i", "(?<$1>[a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s\%\+'\",]+)", $urlPreg);
-            $urlPreg = str_replace("/", "\/", $urlPreg);
+            $urlPreg = str_replace('/', "\/", $urlPreg);
 
             $matches = [];
-            if (!preg_match("/^\/?" . $this->patterns['lang'] . "$urlPreg\/?$/i", $url, $matches)) {
+            if (!preg_match("/^\/?".$this->patterns['lang']."$urlPreg\/?$/i", $url, $matches)) {
                 continue;
             }
             if ($this->urlHosts[$key] != $this->host) {
                 continue;
             }
 
-            $this->currentRoute["key"] = $key;
+            $this->currentRoute['key'] = $key;
 
             if (isset($matches['lang'])) {
-                $this->currentRoute["lang"] = $matches['lang'];
+                $this->currentRoute['lang'] = $matches['lang'];
             }
 
             if (isset($this->urlVars[$key]) && is_array($this->urlVars[$key])) {
-                $this->currentRoute["vars"] = [];
+                $this->currentRoute['vars'] = [];
                 foreach ($this->urlVars[$key] as $varKey => $var) {
-                    $this->currentRoute["vars"][$var] = isset($matches[$var]) ? $matches[$var] : null;
+                    $this->currentRoute['vars'][$var] = isset($matches[$var]) ? $matches[$var] : null;
                 }
             }
 
-            $this->currentRoute["method"] = null;
+            $this->currentRoute['method'] = null;
             if (isset($this->urlMethods[$key])) {
-                $this->currentRoute["method"] = $this->replaceVars($this->currentRoute["vars"], $this->urlMethods[$key]);
+                $this->currentRoute['method'] = $this->replaceVars($this->currentRoute['vars'], $this->urlMethods[$key]);
             }
             if (isset($this->urlPriorities[$key])) {
-                $this->currentRoute["priority"] = $this->urlPriorities[$key];
+                $this->currentRoute['priority'] = $this->urlPriorities[$key];
             }
 
-            $this->currentRoute["class"] = $this->urlControllers[$key];
+            $this->currentRoute['class'] = $this->urlControllers[$key];
             break;
         }
 
-        /**
+        /*
          * Check redirects
          */
-        if ($this->currentRoute["class"] === null && $this->currentRoute["method"] === null) {
+        if (null === $this->currentRoute['class'] && null === $this->currentRoute['method']) {
             foreach ($this->urlRedirects as $redirect) {
-                $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\|number\}\}/i", "(?<$1>[0-9]+)", $redirect['fromUrl']);
+                $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\|number\}\}/i", '(?<$1>[0-9]+)', $redirect['fromUrl']);
                 $urlPreg = preg_replace("/\{\{([a-zA-Z0-9\-\_а-яА-Я]+)\}\}/i", "([a-zA-Zа-яА-Я0-9абвгдежзийклмнопрстуфхцчшщъьюя=\.@_:\[\]\-\s]+)", $urlPreg);
-                $urlPreg = str_replace("/", "\/", $urlPreg);
+                $urlPreg = str_replace('/', "\/", $urlPreg);
 
                 $matches = [];
-                if (preg_match("/^\/?" . $this->patterns['lang'] . "$urlPreg\/?$/i", $url, $matches)) {
+                if (preg_match("/^\/?".$this->patterns['lang']."$urlPreg\/?$/i", $url, $matches)) {
                     if (!empty($redirect['toUrl'])) {
                         $redirectToUrl = $redirect['toUrl'];
                     } else {
                         $redirectToUrl = $this->getRoute($redirect['toUrlKey']);
                     }
                     foreach ($redirect['vars'] as $varKey => $var) {
-                        $redirectToUrl = str_replace("{{" . $var . "}}", $matches[$varKey + 2], $redirectToUrl);
+                        $redirectToUrl = str_replace('{{'.$var.'}}', $matches[$varKey + 2], $redirectToUrl);
                     }
-                    header("Cache-Control: no-store, no-cache, must-revalidate");
-                    header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
+                    header('Cache-Control: no-store, no-cache, must-revalidate');
+                    header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
                     http_response_code($redirect['statusCode']);
                     header("Location: $redirectToUrl");
-                    exit();
+                    exit;
                 }
             }
         }
 
-        if (empty($this->currentRoute["class"])) {
-            $this->currentRoute["class"] = $this->getDefaultClass();
+        if (empty($this->currentRoute['class'])) {
+            $this->currentRoute['class'] = $this->getDefaultClass();
         }
-        if (empty($this->currentRoute["method"])) {
-            $this->currentRoute["method"] = $this->getDefaultMethod();
+        if (empty($this->currentRoute['method'])) {
+            $this->currentRoute['method'] = $this->getDefaultMethod();
         }
 
-        if (!empty($this->currentRoute["class"])) {
-            $this->currentRoute["class"] = $this->replaceVars($this->currentRoute["vars"], $this->currentRoute["class"]);
+        if (!empty($this->currentRoute['class'])) {
+            $this->currentRoute['class'] = $this->replaceVars($this->currentRoute['vars'], $this->currentRoute['class']);
         }
 
         return $this->currentRoute;
@@ -558,21 +571,22 @@ class Router
     private function replaceVars(array $vars, string $string)
     {
         foreach ($vars as $k => $v) {
-            $string = str_replace("{{" . $k . "|number}}", $v, $string);
-            $string = str_replace("{{" . $k . "}}", $v, $string);
+            $string = str_replace('{{'.$k.'|number}}', $v, $string);
+            $string = str_replace('{{'.$k.'}}', $v, $string);
         }
+
         return $string;
     }
 
     private function resetCurrentRoute()
     {
         $this->currentRoute = [
-            "key" => null,
-            "class" => null,
-            "method" => null,
-            "vars" => [],
-            "lang" => null,
-            "priority" => null,
+            'key' => null,
+            'class' => null,
+            'method' => null,
+            'vars' => [],
+            'lang' => null,
+            'priority' => null,
         ];
 
         return $this;
@@ -587,6 +601,7 @@ class Router
             if ($this->urlPriorities[$a] > $this->urlPriorities[$b]) {
                 return -1;
             }
+
             return 1;
         });
 

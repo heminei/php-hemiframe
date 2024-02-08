@@ -7,18 +7,18 @@ namespace HemiFrame\Lib\Session;
  */
 class DBSession implements \HemiFrame\Interfaces\Session
 {
-    private $id = "";
-    private $name = "PHPSESSID";
+    private $id = '';
+    private $name = 'PHPSESSID';
     private $lifeTime = 3600;
-    private $cookiePath = "/";
-    private $cookieDomain = "";
+    private $cookiePath = '/';
+    private $cookieDomain = '';
     private $cookieSecure = false;
     private $cookieHttpOnly = true;
-    private $pdo = null;
-    private $tableName = "sessions";
+    private $pdo;
+    private $tableName = 'sessions';
     private $data = [];
 
-    public function __construct($sessionName = "PHPSESSID", $pdo = null)
+    public function __construct($sessionName = 'PHPSESSID', $pdo = null)
     {
         if (strlen($sessionName) > 1) {
             $this->setName($sessionName);
@@ -34,11 +34,11 @@ class DBSession implements \HemiFrame\Interfaces\Session
     public function start()
     {
         if (!$this->pdo instanceof \PDO) {
-            throw new \Exception("Set PDO object!");
+            throw new \Exception('Set PDO object!');
         }
-        if ($this->getId() == "") {
+        if ('' == $this->getId()) {
             $this->startNew();
-        } elseif ($this->validate() === false) {
+        } elseif (false === $this->validate()) {
             $this->startNew();
         }
 
@@ -60,7 +60,7 @@ class DBSession implements \HemiFrame\Interfaces\Session
 
     public function __set(string $name, $value)
     {
-        return $this->set($name, $value);
+        $this->set($name, $value);
     }
 
     public function get(string $name)
@@ -81,8 +81,8 @@ class DBSession implements \HemiFrame\Interfaces\Session
 
     public function destroy(): self
     {
-        if ($this->id != null) {
-            $stm = $this->getPdo()->prepare("DELETE FROM " . $this->getTableName() .  " WHERE sessionId=:sessionId AND `name`=:name");
+        if (null != $this->id) {
+            $stm = $this->getPdo()->prepare('DELETE FROM '.$this->getTableName().' WHERE sessionId=:sessionId AND `name`=:name');
             $stm->bindValue(':sessionId', $this->getId());
             $stm->bindValue(':name', $this->getName());
             $stm->execute();
@@ -94,21 +94,21 @@ class DBSession implements \HemiFrame\Interfaces\Session
     public function deleteExpired()
     {
         if (!$this->pdo instanceof \PDO) {
-            throw new \RuntimeException("Set PDO object!");
+            throw new \RuntimeException('Set PDO object!');
         }
 
-        $stm = $this->getPdo()->prepare("DELETE FROM " . $this->getTableName() .  " WHERE expiryDate < :date");
-        $stm->bindValue(':date', date("Y-m-d H:i:s"));
+        $stm = $this->getPdo()->prepare('DELETE FROM '.$this->getTableName().' WHERE expiryDate < :date');
+        $stm->bindValue(':date', date('Y-m-d H:i:s'));
         $stm->execute();
     }
 
     public function save(): self
     {
-        if ($this->id != null) {
-            $stm = $this->getPdo()->prepare("UPDATE " . $this->getTableName() .  " SET `data`=:data, `expiryDate`=:expiryDate 
-            WHERE sessionId=:sessionId");
+        if (null != $this->id) {
+            $stm = $this->getPdo()->prepare('UPDATE '.$this->getTableName().' SET `data`=:data, `expiryDate`=:expiryDate 
+            WHERE sessionId=:sessionId');
             $stm->bindValue(':data', serialize($this->data));
-            $stm->bindValue(':expiryDate', date("Y-m-d H:i:s", time() + $this->getLifeTime()));
+            $stm->bindValue(':expiryDate', date('Y-m-d H:i:s', time() + $this->getLifeTime()));
             $stm->bindValue(':sessionId', $this->getId());
             $stm->execute();
         }
@@ -221,10 +221,10 @@ class DBSession implements \HemiFrame\Interfaces\Session
     {
         $this->id = md5(uniqid(__DIR__, true));
 
-        $stm = $this->getPdo()->prepare("INSERT INTO " . $this->getTableName() .  " SET sessionId=:sessionId, `name`=:name, `expiryDate`= :expiryDate");
+        $stm = $this->getPdo()->prepare('INSERT INTO '.$this->getTableName().' SET sessionId=:sessionId, `name`=:name, `expiryDate`= :expiryDate');
         $stm->bindValue(':sessionId', $this->getId());
         $stm->bindValue(':name', $this->getName());
-        $stm->bindValue(':expiryDate', date("Y-m-d H:i:s", time() + $this->getLifeTime()));
+        $stm->bindValue(':expiryDate', date('Y-m-d H:i:s', time() + $this->getLifeTime()));
         $stm->execute();
 
         setcookie(
@@ -238,25 +238,23 @@ class DBSession implements \HemiFrame\Interfaces\Session
         );
     }
 
-    /**
-     *
-     * @return boolean
-     */
     private function validate(): bool
     {
-        if ($this->getId() != null) {
-            $stm = $this->getPdo()->prepare("SELECT * FROM " . $this->getTableName() .  " WHERE sessionId=:sessionId AND `name`=:name AND `expiryDate`>= :expiryDate");
+        if (null != $this->getId()) {
+            $stm = $this->getPdo()->prepare('SELECT * FROM '.$this->getTableName().' WHERE sessionId=:sessionId AND `name`=:name AND `expiryDate`>= :expiryDate');
             $stm->bindValue(':sessionId', $this->getId());
             $stm->bindValue(':name', $this->getName());
-            $stm->bindValue(':expiryDate', date("Y-m-d H:i:s"));
+            $stm->bindValue(':expiryDate', date('Y-m-d H:i:s'));
             $stm->execute();
             $rows = $stm->fetchAll(\PDO::FETCH_OBJ);
 
-            if (is_array($rows) && count($rows) == 1) {
+            if (is_array($rows) && 1 == count($rows)) {
                 $this->data = unserialize($rows[0]->data);
+
                 return true;
             }
         }
+
         return false;
     }
 }

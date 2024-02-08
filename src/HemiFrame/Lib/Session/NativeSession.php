@@ -7,14 +7,14 @@ namespace HemiFrame\Lib\Session;
  */
 class NativeSession implements \HemiFrame\Interfaces\Session
 {
-    private $name = "PHPSESSID";
+    private $name = 'PHPSESSID';
     private $lifeTime = 3600;
-    private $cookiePath = "/";
-    private $cookieDomain = "";
+    private $cookiePath = '/';
+    private $cookieDomain = '';
     private $cookieSecure = false;
     private $cookieHttpOnly = true;
 
-    public function __construct($sessionName = "PHPSESSID")
+    public function __construct($sessionName = 'PHPSESSID')
     {
         $this->setName($sessionName);
     }
@@ -48,7 +48,7 @@ class NativeSession implements \HemiFrame\Interfaces\Session
     public function start()
     {
         session_name($this->getName());
-        ini_set("session.gc_maxlifetime", (string) $this->getLifeTime());
+        ini_set('session.gc_maxlifetime', (string) $this->getLifeTime());
         session_set_cookie_params(
             $this->getLifeTime(),
             $this->getCookiePath(),

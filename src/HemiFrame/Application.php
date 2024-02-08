@@ -7,22 +7,22 @@ namespace HemiFrame;
  */
 class Application
 {
-    public const MODE_DEV = "dev";
-    public const MODE_STAGE = "stage";
-    public const MODE_PROD = "prod";
+    public const MODE_DEV = 'dev';
+    public const MODE_STAGE = 'stage';
+    public const MODE_PROD = 'prod';
 
     private $mode = self::MODE_PROD;
-    private $rootDir = "";
+    private $rootDir = '';
     /**
-     * @var \HemiFrame\Interfaces\DependencyInjection\Container
+     * @var Interfaces\DependencyInjection\Container
      */
     private $container;
     /**
-     * @var \HemiFrame\Lib\Router
+     * @var Lib\Router
      */
     private $router;
 
-    public function __construct(\HemiFrame\Interfaces\DependencyInjection\Container $container, \HemiFrame\Lib\Router $router)
+    public function __construct(Interfaces\DependencyInjection\Container $container, Lib\Router $router)
     {
         $this->container = $container;
         $this->router = $router;
@@ -54,11 +54,11 @@ class Application
 
     public function showDisplayErrors(bool $bool): self
     {
-        if ($bool === true) {
-            ini_set("display_errors", "1");
+        if (true === $bool) {
+            ini_set('display_errors', '1');
             error_reporting(E_ALL);
         } else {
-            ini_set("display_errors", "0");
+            ini_set('display_errors', '0');
             error_reporting(0);
         }
 
@@ -68,13 +68,14 @@ class Application
     public function run(): array
     {
         $route = $this->router->match();
+
         return $route;
     }
 
-
     /**
-     * Get the value of container
-     * @return \HemiFrame\Interfaces\DependencyInjection\Container
+     * Get the value of container.
+     *
+     * @return Interfaces\DependencyInjection\Container
      */
     public function getContainer()
     {

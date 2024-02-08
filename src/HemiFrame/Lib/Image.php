@@ -5,15 +5,14 @@ namespace HemiFrame\Lib;
 class Image
 {
     /**
-     *
      * @var \Imagick
      */
     private $image;
 
-    public function __construct(string $img = null)
+    public function __construct(?string $img = null)
     {
         $this->image = new \Imagick();
-        if ($img !== null) {
+        if (null !== $img) {
             $this->load($img);
         }
     }
@@ -32,7 +31,7 @@ class Image
     public function load(string $img)
     {
         $this->image = new \Imagick($img);
-        if ($this->getType() == "gif") {
+        if ('gif' == $this->getType()) {
             $this->image = $this->image->coalesceImages();
         }
     }
@@ -40,21 +39,23 @@ class Image
     public function setFormat(string $format): self
     {
         $this->image->setImageFormat($format);
-        if ($this->getType() != "gif") {
+        if ('gif' != $this->getType()) {
             $this->image = $this->image->getImage();
         }
+
         return $this;
     }
 
     public function setCompression(int $quality): self
     {
         $this->image->setImageCompressionQuality($quality);
+
         return $this;
     }
 
     public function save(string $filepath): bool
     {
-        if ($this->getType() == "gif") {
+        if ('gif' == $this->getType()) {
             return $this->image->writeImages($filepath, true);
         } else {
             return $this->image->writeImage($filepath);
@@ -63,7 +64,7 @@ class Image
 
     public function output()
     {
-        header('Content-type: ' . $this->getMimeType());
+        header('Content-type: '.$this->getMimeType());
         echo $this->getImage();
     }
 
@@ -102,13 +103,13 @@ class Image
         return $this->image->getImageHeight();
     }
 
-    public function getSize(string $type = "B"): float
+    public function getSize(string $type = 'B'): float
     {
         $size = $this->image->getImageLength();
 
-        if ($type == "KB") {
+        if ('KB' == $type) {
             return round($size / 1024, 2);
-        } elseif ($type == "MB") {
+        } elseif ('MB' == $type) {
             return round($size / 1024 / 1024, 2);
         }
 
@@ -129,6 +130,7 @@ class Image
     {
         $width = (int) ($this->getWidth() * $scale / 100);
         $height = (int) ($this->getheight() * $scale / 100);
+
         return $this->resize($width, $height);
     }
 
@@ -166,7 +168,7 @@ class Image
         return $this;
     }
 
-    public function rotate(float $deg, $background = "#00000000"): self
+    public function rotate(float $deg, $background = '#00000000'): self
     {
         foreach ($this->image as $image) {
             $image->rotateImage(new \ImagickPixel($background), $deg);

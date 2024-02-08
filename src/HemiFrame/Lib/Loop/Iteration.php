@@ -13,7 +13,6 @@ class Iteration
     private $index;
 
     /**
-     *
      * @var int
      */
     private $totalCount;
@@ -39,76 +38,52 @@ class Iteration
         return $this->index;
     }
 
-    /**
-     *
-     * @param int $index
-     */
     public function setIndex(int $index)
     {
         $this->index = $index;
     }
 
-    /**
-     *
-     * @return boolean
-     */
     public function isOdd(): bool
     {
-        if (($this->index) % 2 != 0) {
+        if (0 != $this->index % 2) {
             return true;
         }
+
         return false;
     }
 
-    /**
-     *
-     * @return boolean
-     */
     public function isEven(): bool
     {
-        if (($this->index) % 2 == 0) {
+        if (0 == $this->index % 2) {
             return true;
         }
+
         return false;
     }
 
-    /**
-     *
-     * @return boolean
-     */
     public function isLast(): bool
     {
         if ($this->index == $this->totalCount) {
             return true;
         }
+
         return false;
     }
 
-    /**
-     *
-     * @return boolean
-     */
     public function isFirst(): bool
     {
-        if ($this->index == 1) {
+        if (1 == $this->index) {
             return true;
         }
+
         return false;
     }
 
-    /**
-     *
-     * @return int
-     */
     public function getTotalCount(): int
     {
         return $this->totalCount;
     }
 
-    /**
-     *
-     * @param int $count
-     */
     public function setTotalCount(int $count)
     {
         $this->totalCount = $count;

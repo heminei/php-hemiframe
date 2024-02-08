@@ -7,29 +7,20 @@ namespace HemiFrame\Lib;
  */
 class Normalizer
 {
-    private $data = null;
+    private $data;
 
     public function __construct($data = null)
     {
-        if ($data !== null) {
+        if (null !== $data) {
             $this->setData($data);
         }
     }
 
-    /**
-     *
-     * @return mixed
-     */
     public function getData()
     {
         return $this->data;
     }
 
-    /**
-     *
-     * @param mixed $data
-     * @return self
-     */
     public function setData($data): self
     {
         $this->data = $data;
@@ -38,8 +29,7 @@ class Normalizer
     }
 
     /**
-     * Convert to int
-     * @return self
+     * Convert to int.
      */
     public function toint(): self
     {
@@ -49,8 +39,7 @@ class Normalizer
     }
 
     /**
-     * Convert to float
-     * @return self
+     * Convert to float.
      */
     public function tofloat(): self
     {
@@ -60,8 +49,7 @@ class Normalizer
     }
 
     /**
-     * Convert to double
-     * @return self
+     * Convert to double.
      */
     public function todouble(): self
     {
@@ -71,19 +59,17 @@ class Normalizer
     }
 
     /**
-     * Convert to bool
-     * @return self
+     * Convert to bool.
      */
     public function tobool(): self
     {
-        $this->data = $this->data == true;
+        $this->data = boolval($this->data);
 
         return $this;
     }
 
     /**
-     * Convert to string
-     * @return self
+     * Convert to string.
      */
     public function tostring(): self
     {
@@ -93,8 +79,7 @@ class Normalizer
     }
 
     /**
-     * Strip whitespace (or other characters) from the beginning and end of a string
-     * @return self
+     * Strip whitespace (or other characters) from the beginning and end of a string.
      */
     public function trim(): self
     {
@@ -104,8 +89,7 @@ class Normalizer
     }
 
     /**
-     * Convert all applicable characters to HTML entities
-     * @return self
+     * Convert all applicable characters to HTML entities.
      */
     public function htmlentities(): self
     {
@@ -114,28 +98,21 @@ class Normalizer
         return $this;
     }
 
-    /**
-     *
-     * @return self
-     */
     public function normalize(string $types): self
     {
         $typesArray = explode('|', $types);
         foreach ($typesArray as $type) {
-            if (in_array($type, ["int", "tofloat", "todouble", "tobool", "tostring"])) {
-                $type = "to" . $type;
+            if (in_array($type, ['int', 'tofloat', 'todouble', 'tobool', 'tostring'])) {
+                $type = 'to'.$type;
             }
             if (method_exists($this, $type)) {
                 $this->$type();
             }
         }
+
         return $this;
     }
 
-    /**
-     *
-     * @return self
-     */
     public function xss(): self
     {
         // Fix &entity\n;

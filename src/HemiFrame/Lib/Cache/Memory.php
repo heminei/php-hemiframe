@@ -8,7 +8,7 @@ namespace HemiFrame\Lib\Cache;
 class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
 {
     private static $data = [];
-    private $keyPrefix = "";
+    private $keyPrefix = '';
     private $defaultTtl = 120;
 
     public function getKeyPrefix(): string
@@ -22,24 +22,22 @@ class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInter
     }
 
     /**
-     *
      * @param string $key
-     * @param mixed $value
-     * @param int $time
-     * @return bool
+     * @param int    $time
+     *
      * @throws InvalidArgumentException
      */
     public function set($key, $value, $time = null): bool
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Enter key");
+            throw new InvalidArgumentException('Enter key');
         }
-        if ($time === null) {
+        if (null === $time) {
             $time = $this->defaultTtl;
         }
-        static::$data[$this->keyPrefix . $key] = [
-            "expiryTime" => time() + $time,
-            "value" => $value,
+        self::$data[$this->keyPrefix.$key] = [
+            'expiryTime' => time() + $time,
+            'value' => $value,
         ];
 
         return true;
@@ -47,68 +45,63 @@ class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInter
 
     /**
      * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
     public function get($key, $default = null)
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Key is empty");
+            throw new InvalidArgumentException('Key is empty');
         }
-        if (isset(static::$data[$this->keyPrefix . $key])) {
-            if (static::$data[$this->keyPrefix . $key]['expiryTime'] > time()) {
-                return static::$data[$this->keyPrefix . $key]['value'];
+        if (isset(self::$data[$this->keyPrefix.$key])) {
+            if (self::$data[$this->keyPrefix.$key]['expiryTime'] > time()) {
+                return self::$data[$this->keyPrefix.$key]['value'];
             }
         }
+
         return $default;
     }
 
     /**
      * @param string $key
-     * @return bool
+     *
      * @throws InvalidArgumentException
      */
     public function delete($key): bool
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Enter key");
+            throw new InvalidArgumentException('Enter key');
         }
-        unset(static::$data[$this->keyPrefix . $key]);
+        unset(self::$data[$this->keyPrefix.$key]);
 
         return true;
     }
 
-    /**
-     * @return boolean
-     */
     public function clear(): bool
     {
-        static::$data = [];
+        self::$data = [];
+
         return true;
     }
 
     /**
      * @param string $key
-     * @return bool
+     *
      * @throws InvalidArgumentException
      */
     public function has($key): bool
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Enter key");
+            throw new InvalidArgumentException('Enter key');
         }
-        if (isset(static::$data[md5($this->keyPrefix . $key)])) {
-            if (static::$data[md5($this->keyPrefix . $key)]['expiryTime'] > time()) {
+        if (isset(self::$data[md5($this->keyPrefix.$key)])) {
+            if (self::$data[md5($this->keyPrefix.$key)]['expiryTime'] > time()) {
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     *
-     * @param string $key
-     * @return bool
      * @throws \Exception
      */
     public function exists(string $key): bool
@@ -118,13 +111,11 @@ class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInter
 
     /**
      * @param array $keys
-     * @param mixed $default
-     * @return array
      */
     public function getMultiple($keys, $default = null): array
     {
         if (!is_array($keys)) {
-            throw new InvalidArgumentException("Keys must be array");
+            throw new InvalidArgumentException('Keys must be array');
         }
 
         $data = [];
@@ -138,12 +129,12 @@ class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInter
     public function setMultiple($values, $ttl = null): bool
     {
         if (!is_array($values)) {
-            throw new InvalidArgumentException("Values must be array");
+            throw new InvalidArgumentException('Values must be array');
         }
 
         $result = true;
         foreach ($values as $key => $value) {
-            if ($this->set($key, $value, $ttl) == false) {
+            if (false == $this->set($key, $value, $ttl)) {
                 $result = false;
             }
         }
@@ -154,7 +145,7 @@ class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInter
     public function deleteMultiple($keys)
     {
         if (!is_array($keys)) {
-            throw new InvalidArgumentException("Keys must be array");
+            throw new InvalidArgumentException('Keys must be array');
         }
 
         foreach ($keys as $key) {

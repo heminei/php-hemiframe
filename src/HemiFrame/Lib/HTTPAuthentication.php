@@ -8,29 +8,26 @@ namespace HemiFrame\Lib;
 class HTTPAuthentication
 {
     /**
-     *
      * @var array
      */
     private $users = [];
 
     /**
-     *
      * @var string|null
      */
-    private $message = null;
+    private $message;
 
-    public function __construct(string $message = null)
+    public function __construct(?string $message = null)
     {
-        if ($message !== null) {
+        if (null !== $message) {
             $this->setMessage($message);
         } else {
-            $this->setMessage("Access restricted");
+            $this->setMessage('Access restricted');
         }
     }
 
     /**
-     *
-     * @return boolean
+     * @return bool
      */
     public function login()
     {
@@ -38,18 +35,13 @@ class HTTPAuthentication
             and $_SERVER['PHP_AUTH_PW'] == $this->users[$_SERVER['PHP_AUTH_USER']])) {
             return true;
         } else {
-            header('WWW-Authenticate: Basic realm="' . $this->getMessage() . '"');
+            header('WWW-Authenticate: Basic realm="'.$this->getMessage().'"');
             header('HTTP/1.0 401 Unauthorized');
+
             return false;
         }
     }
 
-    /**
-     *
-     * @param string $user
-     * @param string $password
-     * @return \HemiFrame\Lib\HTTPAuthentication
-     */
     public function addUser(string $user, string $password): self
     {
         $this->users[$user] = $password;
@@ -57,27 +49,17 @@ class HTTPAuthentication
         return $this;
     }
 
-    /**
-     *
-     * @return array
-     */
     public function getUsers(): array
     {
         return $this->users;
     }
 
-    /**
-     *
-     * @return string
-     */
     public function getMessage(): string
     {
         return $this->message;
     }
 
     /**
-     *
-     * @param string $message
      * @return $this
      */
     public function setMessage(string $message): self

@@ -19,11 +19,6 @@ class Registry
         return $this->_data[$name];
     }
 
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return self
-     */
     public function setData(string $name, $value): self
     {
         $this->_data[$name] = $value;
@@ -32,8 +27,8 @@ class Registry
     }
 
     /**
-     *
      * @param string $name
+     *
      * @return string
      */
     public function getData($name)
@@ -41,10 +36,6 @@ class Registry
         return $this->_data[$name];
     }
 
-    /**
-     *
-     * @return array
-     */
     public function getAllData(): array
     {
         return $this->_data;

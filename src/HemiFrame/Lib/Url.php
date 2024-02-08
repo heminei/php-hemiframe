@@ -7,19 +7,19 @@ namespace HemiFrame\Lib;
  */
 class Url
 {
-    private $url = null;
-    private $scheme = null;
-    private $host = null;
-    private $port = null;
-    private $user = null;
-    private $pass = null;
-    private $path = null;
-    private $query = null;
-    private $fragment = null;
+    private $url;
+    private $scheme;
+    private $host;
+    private $port;
+    private $user;
+    private $pass;
+    private $path;
+    private $query;
+    private $fragment;
 
     public function __construct($url = null)
     {
-        if ($url !== null) {
+        if (null !== $url) {
             $this->setUrl($url);
         }
     }
@@ -35,7 +35,7 @@ class Url
 
         $this->scheme = isset($parseUrl['scheme']) ? $parseUrl['scheme'] : null;
         $this->host = isset($parseUrl['host']) ? $parseUrl['host'] : null;
-        $this->port = isset($parseUrl['port']) ? $parseUrl['port'] : null;
+        $this->port = isset($parseUrl['port']) ? (int) $parseUrl['port'] : null;
         $this->user = isset($parseUrl['user']) ? $parseUrl['user'] : null;
         $this->pass = isset($parseUrl['pass']) ? $parseUrl['pass'] : null;
         $this->path = isset($parseUrl['path']) ? $parseUrl['path'] : null;
@@ -49,6 +49,7 @@ class Url
     {
         $array = [];
         parse_str($this->query, $array);
+
         return $array;
     }
 
@@ -56,6 +57,7 @@ class Url
     {
         $this->url = $url;
         $this->parseUrl();
+
         return $this;
     }
 
@@ -64,42 +66,42 @@ class Url
         return $this->url;
     }
 
-    public function getScheme()
+    public function getScheme(): ?string
     {
         return $this->scheme;
     }
 
-    public function getHost()
+    public function getHost(): ?string
     {
         return $this->host;
     }
 
-    public function getPort()
+    public function getPort(): ?int
     {
         return $this->port;
     }
 
-    public function getUser()
+    public function getUser(): ?string
     {
         return $this->user;
     }
 
-    public function getPass()
+    public function getPass(): ?string
     {
         return $this->pass;
     }
 
-    public function getPath()
+    public function getPath(): ?string
     {
         return $this->path;
     }
 
-    public function getQuery()
+    public function getQuery(): ?string
     {
         return $this->query;
     }
 
-    public function getFragment()
+    public function getFragment(): ?string
     {
         return $this->fragment;
     }

@@ -19,32 +19,31 @@ class Benchmark
     }
 
     /**
-     * Start time checker
-     * @return self
+     * Start time checker.
      */
     public function start(): self
     {
         $this->startTime = microtime(true);
         $this->startMemoryUsed = memory_get_usage();
         $this->startIncludedFiles = count(get_included_files());
+
         return $this;
     }
 
     /**
-     * Stop time checker
-     * @return self
+     * Stop time checker.
      */
     public function stop(): self
     {
         $this->stopTime = microtime(true);
         $this->stopMemoryUsed = memory_get_usage();
         $this->endIncludedFiles = count(get_included_files());
+
         return $this;
     }
 
     /**
-     * Get execute time
-     * @return float
+     * Get execute time.
      */
     public function getExecuteTime(): float
     {
@@ -52,8 +51,7 @@ class Benchmark
     }
 
     /**
-     * Get memory used
-     * @return int
+     * Get memory used.
      */
     public function getMemoryUsed(): int
     {
@@ -61,8 +59,7 @@ class Benchmark
     }
 
     /**
-     * Get included files count
-     * @return int
+     * Get included files count.
      */
     public function getIclidedFilesCount(): int
     {
@@ -70,27 +67,28 @@ class Benchmark
     }
 
     /**
-     * Get server load
+     * Get server load.
+     *
      * @param int $type - 0 (all loads array), 1 (last 1 min), 2 (last 5 min), 3 (last 15 min)
-     * @return mixed
      */
     public function getServerLoad(int $type = 0)
     {
-        if (function_exists("sys_getloadavg")) {
+        if (function_exists('sys_getloadavg')) {
             $load = sys_getloadavg();
         } else {
             $load = [false, false, false];
         }
         $return = null;
-        if ($type === 0) {
+        if (0 === $type) {
             $return = $load;
-        } elseif ($type === 1) {
+        } elseif (1 === $type) {
             $return = $load[0];
-        } elseif ($type === 2) {
+        } elseif (2 === $type) {
             $return = $load[1];
-        } elseif ($type === 3) {
+        } elseif (3 === $type) {
             $return = $load[2];
         }
+
         return $return;
     }
 }

@@ -7,7 +7,7 @@ namespace HemiFrame;
  */
 class Template
 {
-    private $html = null;
+    private $html;
     private $vars = [];
     private $autoRemoveLoops = true;
     private $autoRemoveSwitchers = true;
@@ -19,7 +19,7 @@ class Template
             if (is_readable($template)) {
                 $this->html = file_get_contents($template);
             } else {
-                throw new \InvalidArgumentException("The file is not readable.");
+                throw new \InvalidArgumentException('The file is not readable.');
             }
         } else {
             $this->html = $template;
@@ -41,11 +41,6 @@ class Template
         return $this->parse();
     }
 
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return self
-     */
     public function setVar(string $name, $value): self
     {
         $this->vars[$name] = $value;
@@ -53,23 +48,15 @@ class Template
         return $this;
     }
 
-    /**
-     * @param string $name
-     * @return mixed
-     */
     public function getVar(string $name)
     {
         if (isset($this->vars[$name])) {
             return $this->vars[$name];
         }
+
         return null;
     }
 
-    /**
-     * @param string $search
-     * @param string $replace
-     * @return self
-     */
     public function replaceString(string $search, string $replace): self
     {
         $this->html = str_replace($search, $replace, $this->html);
@@ -78,121 +65,116 @@ class Template
     }
 
     /**
-     *
-     * @param string $id Loop ID
-     * @param array|\Traversable $array Result Array
-     * @param object|null $instance Object
-     * @param string|\Closure|null $method Method
+     * @param string               $id       Loop ID
+     * @param array|\Traversable   $array    Result Array
+     * @param object|null          $instance Object
+     * @param string|\Closure|null $method   Method
      */
     public function setLoop(string $id, $array, $instance = null, $method = null): self
     {
-        if ($method == null) {
+        if (null == $method) {
             $method = $id;
         }
 
-        if (!is_array($array) && ($array instanceof \Traversable) == false) {
-            throw new \InvalidArgumentException("Invalid array parameter");
+        if (!is_array($array) && (($array instanceof \Traversable) == false)) {
+            throw new \InvalidArgumentException('Invalid array parameter');
         }
 
         do {
-            $tag = "wLoop";
-            $element = '<' . $tag . ' id="' . $id . '">';
-            $outernHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+            $tag = 'wLoop';
+            $element = '<'.$tag.' id="'.$id.'">';
+            $outerHtml = $this->getElementOuterHtml($this->html, $element, $tag);
             $innerHtml = $this->getElementInnerHtml($this->html, $element, $tag);
 
-            $htmlString = "";
+            $htmlString = '';
             $i = 1;
-            $iteration = new \HemiFrame\Lib\Loop\Iteration($i);
+            $iteration = new Lib\Loop\Iteration($i);
             if (!empty($array)) {
                 $iteration->setTotalCount(count($array));
                 foreach ($array as $value) {
                     $itemClass = new Template($innerHtml);
                     $iteration->setIndex($i);
-                    if ($instance === null) {
+                    if (null === $instance) {
                         $method($itemClass, $value, $iteration);
                     } else {
                         $instance->$method($itemClass, $value, $iteration);
                     }
                     $htmlString .= $itemClass->parse();
-                    $i++;
+                    ++$i;
                 }
             }
 
-            $this->html = $this->strReplaceFirst($outernHtml, $htmlString, $this->html);
+            $this->html = $this->strReplaceFirst($outerHtml, $htmlString, $this->html);
         } while (strstr($this->html, $element));
 
         return $this;
     }
 
-    /**
-     * @param string $id
-     * @param string $value
-     * @return self
-     */
     public function setSwitcher(string $id, string $value): self
     {
         do {
-            $tag = "wSwitcher";
-            $element = '<' . $tag . ' id="' . $id . '">';
-            $outernHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+            $tag = 'wSwitcher';
+            $element = '<'.$tag.' id="'.$id.'">';
+            $outerHtml = $this->getElementOuterHtml($this->html, $element, $tag);
             $innerHtml = $this->getElementInnerHtml($this->html, $element, $tag);
 
-            if (empty($outernHtml)) {
-                throw new \InvalidArgumentException("Can't find switcher with ID:" .  $id);
+            if (empty($outerHtml)) {
+                throw new \InvalidArgumentException("Can't find switcher with ID:".$id);
             }
 
-            $tagCase = "case";
-            $elementCase = '<' . $tagCase . ' value="' . $value . '">';
+            $tagCase = 'case';
+            $elementCase = '<'.$tagCase.' value="'.$value.'">';
             $innerHtmlCase = $this->getElementInnerHtml($innerHtml, $elementCase, $tagCase);
 
             if (empty($innerHtmlCase)) {
-                throw new \InvalidArgumentException("Can't find case with value '" . $value . "' in switcher with ID '" .  $id . "'");
+                throw new \InvalidArgumentException("Can't find case with value '".$value."' in switcher with ID '".$id."'");
             }
 
-            $this->html = $this->strReplaceFirst($outernHtml, $innerHtmlCase, $this->html);
+            $this->html = $this->strReplaceFirst($outerHtml, $innerHtmlCase, $this->html);
         } while (strstr($this->html, $element));
 
         return $this;
     }
 
     /**
-     * Clear unused loops
-     * @return self
+     * Clear unused loops.
      */
     public function clearLoops(): self
     {
         $results = [];
         preg_match_all('/\<wLoop id\=\"(?<ids>.*)\">/', $this->html, $results);
         foreach ($results['ids'] as $id) {
-            $tag = "wLoop";
-            $element = '<' . $tag . ' id="' . $id . '">';
-            $outernHtml = $this->getElementOuterHtml($this->html, $element, $tag);
-            $this->html = $this->strReplaceFirst($outernHtml, '', $this->html);
+            $tag = 'wLoop';
+            $element = '<'.$tag.' id="'.$id.'">';
+            $outerHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+            $this->html = $this->strReplaceFirst($outerHtml, '', $this->html);
         }
+
         return $this;
     }
 
     /**
-     * Clear unused switches
-     * @return self
+     * Clear unused switches.
      */
     public function clearSwitchers(): self
     {
         $results = [];
         preg_match_all('/\<wSwitcher id\=\"(?<ids>.*)\">/', $this->html, $results);
         foreach ($results['ids'] as $id) {
-            $tag = "wSwitcher";
-            $element = '<' . $tag . ' id="' . $id . '">';
-            $outernHtml = $this->getElementOuterHtml($this->html, $element, $tag);
-            $this->html = $this->strReplaceFirst($outernHtml, '', $this->html);
+            $tag = 'wSwitcher';
+            $element = '<'.$tag.' id="'.$id.'">';
+            $outerHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+            $this->html = $this->strReplaceFirst($outerHtml, '', $this->html);
         }
+
         return $this;
     }
 
     public function autoRemoveLoops($removeLoops = null)
     {
-        if ($removeLoops !== null) {
+        if (null !== $removeLoops) {
             $this->autoRemoveLoops = $removeLoops;
+
             return $this;
         } else {
             return $this->autoRemoveLoops;
@@ -201,8 +183,9 @@ class Template
 
     public function autoRemoveSwitchers($removeSwitchers = null)
     {
-        if ($removeSwitchers !== null) {
+        if (null !== $removeSwitchers) {
             $this->autoRemoveSwitchers = $removeSwitchers;
+
             return $this;
         } else {
             return $this->autoRemoveSwitchers;
@@ -211,8 +194,9 @@ class Template
 
     public function autoRemoveVariables($removeVariables = null)
     {
-        if ($removeVariables !== null) {
+        if (null !== $removeVariables) {
             $this->autoRemoveVariables = $removeVariables;
+
             return $this;
         } else {
             return $this->autoRemoveVariables;
@@ -224,17 +208,17 @@ class Template
         foreach ($this->vars as $key => $value) {
             if (is_array($value) or is_object($value)) {
                 foreach ($value as $key1 => $value1) {
-                    if ($value1 === null) {
-                        $value1 = "";
+                    if (null === $value1) {
+                        $value1 = '';
                     }
-                    $tagToReplace = "{{" . $key . "." . $key1 . "}}";
+                    $tagToReplace = '{{'.$key.'.'.$key1.'}}';
                     $this->html = str_replace($tagToReplace, $value1, $this->html);
                 }
             } else {
-                if ($value === null) {
-                    $value = "";
+                if (null === $value) {
+                    $value = '';
                 }
-                $tagToReplace = "{{" . $key . "}}";
+                $tagToReplace = '{{'.$key.'}}';
                 $this->html = str_replace($tagToReplace, $value, $this->html);
             }
         }
@@ -246,7 +230,7 @@ class Template
             $this->clearSwitchers();
         }
         if ($this->autoRemoveVariables()) {
-            $this->html = preg_replace('/{{(.*?)}}/s', "", $this->html);
+            $this->html = preg_replace('/{{(.*?)}}/s', '', $this->html);
         }
 
         return $this->html;
@@ -264,24 +248,26 @@ class Template
 
     private function strReplaceFirst(?string $search, string $replace, string $subject): string
     {
-        if ($search === null) {
+        if (null === $search) {
             return $subject;
         }
         $pos = strpos($subject, $search);
-        if ($pos !== false) {
+        if (false !== $pos) {
             $subject = substr_replace($subject, $replace, $pos, strlen($search));
         }
+
         return $subject;
     }
 
     private function getElementOuterHtml(string $html, string $element, string $tag): ?string
     {
         $innerHtml = $this->getElementInnerHtml($html, $element, $tag);
-        if ($innerHtml == null) {
+        if (null == $innerHtml) {
             return null;
         }
 
-        $outerHtml = $element . $innerHtml . "</" . $tag . ">";
+        $outerHtml = $element.$innerHtml.'</'.$tag.'>';
+
         return $outerHtml;
     }
 
@@ -291,17 +277,18 @@ class Template
         if (!isset($startArray[1])) {
             return null;
         }
-        $endArray = explode("</" . $tag . ">", $startArray[1]);
+        $endArray = explode('</'.$tag.'>', $startArray[1]);
         $countOpenTags = 0;
-        $innerHtml = "";
+        $innerHtml = '';
         foreach ($endArray as $key => $value) {
-            $countOpenTags = $countOpenTags + substr_count($value, "<" .  $tag . " ");
+            $countOpenTags = $countOpenTags + substr_count($value, '<'.$tag.' ');
             $innerHtml .= $value;
             if ($key == $countOpenTags) {
                 break;
             }
-            $innerHtml .= "</" . $tag . ">";
+            $innerHtml .= '</'.$tag.'>';
         }
+
         return $innerHtml;
     }
 }

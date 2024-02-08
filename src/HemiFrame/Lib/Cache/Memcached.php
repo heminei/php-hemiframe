@@ -4,14 +4,13 @@ namespace HemiFrame\Lib\Cache;
 
 class Memcached implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
 {
-    private $keyPrefix = "";
+    private $keyPrefix = '';
     private $defaultTtl = 120;
 
     /**
-     *
      * @var \Memcached
      */
-    private $memcached = null;
+    private $memcached;
 
     public function getKeyPrefix(): string
     {
@@ -38,78 +37,72 @@ class Memcached implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheIn
     }
 
     /**
-     *
      * @param string $key
-     * @param mixed $value
-     * @param int $time
-     * @return bool
+     * @param int    $time
+     *
      * @throws InvalidArgumentException
      */
     public function set($key, $value, $time = null): bool
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Enter key");
+            throw new InvalidArgumentException('Enter key');
         }
-        if ($time === null) {
+        if (null === $time) {
             $time = $this->defaultTtl;
         }
 
-        return $this->memcached->set($this->keyPrefix . $key, $value, $time);
+        return $this->memcached->set($this->keyPrefix.$key, $value, $time);
     }
 
     /**
      * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
     public function get($key, $default = null)
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Key is empty");
+            throw new InvalidArgumentException('Key is empty');
         }
 
-        $data = $this->memcached->get($this->keyPrefix . $key);
-        if ($data !== false) {
+        $data = $this->memcached->get($this->keyPrefix.$key);
+        if (false !== $data) {
             return $default;
         }
+
         return $default;
     }
 
     /**
      * @param string $key
-     * @return bool
+     *
      * @throws InvalidArgumentException
      */
     public function delete($key): bool
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Enter key");
+            throw new InvalidArgumentException('Enter key');
         }
-        return $this->memcached->delete($this->keyPrefix . $key);
+
+        return $this->memcached->delete($this->keyPrefix.$key);
     }
 
-    /**
-     * @return boolean
-     */
     public function clear(): bool
     {
         return $this->memcached->flush();
     }
 
     /**
-     *
      * @param string $key
-     * @return bool
+     *
      * @throws InvalidArgumentException
      */
     public function has($key): bool
     {
         if (empty($key)) {
-            throw new InvalidArgumentException("Enter key");
+            throw new InvalidArgumentException('Enter key');
         }
         $this->get($key);
 
-        if ($this->memcached->getResultCode() === \Memcached::RES_NOTFOUND) {
+        if (\Memcached::RES_NOTFOUND === $this->memcached->getResultCode()) {
             return false;
         }
 
@@ -117,8 +110,6 @@ class Memcached implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheIn
     }
 
     /**
-     * @param string $key
-     * @return bool
      * @throws \Exception
      */
     public function exists(string $key): bool
@@ -128,13 +119,11 @@ class Memcached implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheIn
 
     /**
      * @param array $keys
-     * @param mixed $default
-     * @return array
      */
     public function getMultiple($keys, $default = null): array
     {
         if (!is_array($keys)) {
-            throw new InvalidArgumentException("Keys must be array");
+            throw new InvalidArgumentException('Keys must be array');
         }
 
         $data = [];
@@ -148,12 +137,12 @@ class Memcached implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheIn
     public function setMultiple($values, $ttl = null): bool
     {
         if (!is_array($values)) {
-            throw new InvalidArgumentException("Values must be array");
+            throw new InvalidArgumentException('Values must be array');
         }
 
         $result = true;
         foreach ($values as $key => $value) {
-            if ($this->set($key, $value, $ttl) == false) {
+            if (false == $this->set($key, $value, $ttl)) {
                 $result = false;
             }
         }
@@ -164,7 +153,7 @@ class Memcached implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheIn
     public function deleteMultiple($keys)
     {
         if (!is_array($keys)) {
-            throw new InvalidArgumentException("Keys must be array");
+            throw new InvalidArgumentException('Keys must be array');
         }
 
         foreach ($keys as $key) {

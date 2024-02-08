@@ -3,7 +3,8 @@
 namespace HemiFrame\Lib;
 
 /**
- * Create tag
+ * Create tag.
+ *
  * @author Heminei
  */
 class Tag
@@ -11,13 +12,13 @@ class Tag
     private $tag;
     private $attr = [];
     private $attrValues = [];
-    private $content = null;
+    private $content;
     private $selfClose = false;
-    private $selfCloseTagList = ["img", "link", "meta", "br", "hr", "input"];
+    private $selfCloseTagList = ['img', 'link', 'meta', 'br', 'hr', 'input'];
 
     public function __construct($tag = null)
     {
-        if ($tag !== null) {
+        if (null !== $tag) {
             $this->setTag($tag);
         }
     }
@@ -28,8 +29,7 @@ class Tag
     }
 
     /**
-     * Get string
-     * @return string
+     * Get string.
      */
     public function getTag(): string
     {
@@ -37,8 +37,8 @@ class Tag
     }
 
     /**
-     * Set string
-     * @param string $tag
+     * Set string.
+     *
      * @return $this
      */
     public function setTag(string $tag): self
@@ -52,35 +52,32 @@ class Tag
     }
 
     /**
-     * Get attr value
-     * @param string $attr
-     * @return string
+     * Get attr value.
      */
     public function getAttr(string $attr): string
     {
         if (isset($this->attrValues[$attr])) {
             return $this->attrValues[$attr];
         } else {
-            return "";
+            return '';
         }
     }
 
     /**
-     * Set attr
-     * @param string $attr
-     * @param mixed $value
+     * Set attr.
+     *
      * @return $this
      */
     public function setAttr(string $attr, $value): self
     {
         $this->attr[] = $attr;
         $this->attrValues[$attr] = htmlentities($value);
+
         return $this;
     }
 
     /**
-     * Get inner content
-     * @return mixed
+     * Get inner content.
      */
     public function getContent()
     {
@@ -88,8 +85,8 @@ class Tag
     }
 
     /**
-     * Set inner content
-     * @param mixed $content
+     * Set inner content.
+     *
      * @return $this
      */
     public function setContent($content): self
@@ -100,32 +97,28 @@ class Tag
     }
 
     /**
-     *
-     * @param mixed $content
      * @return $this
      */
     public function appendContent($content): self
     {
-        $this->content = $this->content . $content;
+        $this->content = $this->content.$content;
 
         return $this;
     }
 
     /**
-     *
-     * @param mixed $content
      * @return $this
      */
     public function prependContent($content): self
     {
-        $this->content = $content . $this->content;
+        $this->content = $content.$this->content;
 
         return $this;
     }
 
     /**
-     * Enable self close tag
-     * @param bool $bool
+     * Enable self close tag.
+     *
      * @return $this
      */
     public function setSelfClose(bool $bool): self
@@ -136,25 +129,24 @@ class Tag
     }
 
     /**
-     * Return html tag string
-     * @return string
+     * Return html tag string.
      */
     public function build(): string
     {
-        $html = "";
-        $attrSting = "";
+        $html = '';
+        $attrSting = '';
         if (count($this->attr) > 0) {
             foreach ($this->attr as $attr) {
-                $attrSting .= $attr . "=\"" . $this->attrValues[$attr] . "\" ";
+                $attrSting .= $attr.'="'.$this->attrValues[$attr].'" ';
             }
         }
-        if ($this->selfClose === false) {
-            $html = "<" . $this->tag . " " . $attrSting . ">" . $this->content . "</" . $this->tag . ">";
+        if (false === $this->selfClose) {
+            $html = '<'.$this->tag.' '.$attrSting.'>'.$this->content.'</'.$this->tag.'>';
         } else {
-            $html = "<" . $this->tag . " " . $attrSting . "/>";
+            $html = '<'.$this->tag.' '.$attrSting.'/>';
         }
-        $html = str_replace("  ", " ", $html);
-        $html = str_replace("<" . $this->tag . " >", "<" . $this->tag . ">", $html);
+        $html = str_replace('  ', ' ', $html);
+        $html = str_replace('<'.$this->tag.' >', '<'.$this->tag.'>', $html);
 
         return $html;
     }
