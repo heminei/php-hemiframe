@@ -1,7 +1,7 @@
 {
     "name": "hemiframe/hemiframe",
     "description": "PHP micro framework",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "keywords": [
         "PHP",
         "framework",

@@ -173,7 +173,7 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
             if (0 === strpos($injectName, '\\')) {
                 $injectName = substr($injectName, 1);
             } else {
-                $injectName = $reflection->getNamespaceName().'\\'.$injectName;
+                $injectName = $property->getDeclaringClass()->getNamespaceName().'\\'.$injectName;
             }
 
             $property->setAccessible(true);
