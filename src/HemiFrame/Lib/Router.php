@@ -271,13 +271,13 @@ class Router
                     $routes[] = [
                         'class' => $class,
                         'settings' => [
-                        'controller' => $class,
-                        'method' => $attribute['method'],
-                        'key' => $attributeInstance->key,
-                        'url' => $attributeInstance->url,
-                        'lang' => $attributeInstance->lang,
-                        'host' => $attributeInstance->host,
-                        'priority' => $attributeInstance->priority,
+                            'controller' => $class,
+                            'method' => $attribute['method'],
+                            'key' => $attributeInstance->key,
+                            'url' => $attributeInstance->url,
+                            'lang' => $attributeInstance->lang,
+                            'host' => $attributeInstance->host,
+                            'priority' => $attributeInstance->priority,
                         ],
                     ];
                 }

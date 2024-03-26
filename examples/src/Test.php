@@ -2,10 +2,14 @@
 
 namespace Examples;
 
+use HemiFrame\Lib\DependencyInjection\Attributes\Inject;
 use HemiFrame\Lib\Routing\Attributes\Route;
 
 class Test
 {
+    #[Inject]
+    protected Test2 $testPropertyInject;
+
     #[Route(url: '/comments', key: 'comments')]
     public function comments()
     {

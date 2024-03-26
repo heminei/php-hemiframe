@@ -1,5 +1,6 @@
 <?php
 
+use Examples\Test;
 use Examples\TestSingleton;
 use Examples\TestSingletonExtend;
 
@@ -19,6 +20,8 @@ $container->setRule(HemiFrame\Lib\Router::class, [
     'singleton' => true,
 ]);
 $router = $container->get(HemiFrame\Lib\Router::class);
+
+$test = $container->get(Test::class);
 
 $testSingleton = $container->get(TestSingleton::class);
 $testSingleton = $container->get(TestSingleton::class);

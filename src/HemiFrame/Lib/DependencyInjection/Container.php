@@ -2,6 +2,7 @@
 
 namespace HemiFrame\Lib\DependencyInjection;
 
+use HemiFrame\Lib\DependencyInjection\Attributes\Inject;
 use HemiFrame\Lib\DependencyInjection\Attributes\Singleton;
 
 /**
@@ -141,39 +142,51 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
         if ($reflection->getParentClass()) {
             $this->injectProperties($class, $reflection->getParentClass());
         }
-        //        var_dump($reflection->getName());
         foreach ($reflection->getProperties() as $property) {
             /** @var \ReflectionProperty $property */
             $docComment = $property->getDocComment();
-            //            var_dump($property->getName());
-            if (!strstr($docComment, '@Inject')) {
+            if (!strstr($docComment, '@Inject') && empty($property->getAttributes(Inject::class))) {
                 continue;
             }
+
             $injectName = null;
-            $lines = explode("\n", $docComment);
-            foreach ($lines as $line) {
-                if (strstr($line, '@Inject')) {
-                    $stringArray = explode('@Inject ', $line);
-                    if (isset($stringArray[1])) {
-                        $injectName = trim($stringArray[1]);
-                        break;
-                    }
+            if ($property->hasType()) {
+                $type = $property->getType();
+                if ($type->isBuiltin()) {
+                    throw new Exception('Invalid property injection in '.$reflection->getName().' class, property name: '.$property->getName().'. Cannot inject builtin type '.$type->getName());
                 }
-                if (strstr($line, '@var')) {
-                    $stringArray = explode('@var ', $line);
-                    if (isset($stringArray[1])) {
-                        $injectName = trim($stringArray[1]);
-                        break;
-                    }
-                }
+
+                $injectName = $type->getName();
             }
             if (empty($injectName)) {
-                throw new Exception('Invalid property injection in '.$reflection->getName().', property name: '.$property->getName());
+                $lines = explode("\n", $docComment);
+                foreach ($lines as $line) {
+                    if (strstr($line, '@Inject')) {
+                        $stringArray = explode('@Inject ', $line);
+                        if (isset($stringArray[1])) {
+                            $injectName = trim($stringArray[1]);
+                            break;
+                        }
+                    }
+                    if (strstr($line, '@var')) {
+                        $stringArray = explode('@var ', $line);
+                        if (isset($stringArray[1])) {
+                            $injectName = trim($stringArray[1]);
+                            break;
+                        }
+                    }
+                }
+                if (!empty($injectName)) {
+                    if (0 === strpos($injectName, '\\')) {
+                        $injectName = substr($injectName, 1);
+                    } else {
+                        $injectName = $property->getDeclaringClass()->getNamespaceName().'\\'.$injectName;
+                    }
+                }
             }
-            if (0 === strpos($injectName, '\\')) {
-                $injectName = substr($injectName, 1);
-            } else {
-                $injectName = $property->getDeclaringClass()->getNamespaceName().'\\'.$injectName;
+
+            if (empty($injectName)) {
+                throw new Exception('Invalid property injection in '.$reflection->getName().' class, property name: '.$property->getName());
             }
 
             $property->setAccessible(true);
