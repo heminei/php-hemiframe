@@ -97,8 +97,8 @@ class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInter
         if (empty($key)) {
             throw new InvalidArgumentException("Enter key");
         }
-        if (isset(static::$data[md5($this->keyPrefix . $key)])) {
-            if (static::$data[md5($this->keyPrefix . $key)]['expiryTime'] > time()) {
+        if (isset(static::$data[$this->keyPrefix . $key])) {
+            if (static::$data[$this->keyPrefix . $key]['expiryTime'] > time()) {
                 return true;
             }
         }
