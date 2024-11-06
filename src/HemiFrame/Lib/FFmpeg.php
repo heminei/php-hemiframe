@@ -178,14 +178,13 @@ class FFmpeg
     {
         $infoString = shell_exec($this->getBinaryPath()." -i '".$this->getInputFile()."'".' 2<&1');
         $regexSizes = '/Video: (.*?), (.*?), (?<width>[0-9]{1,4})x(?<height>[0-9]{1,4})/';
-        $regs = [];
+        $matches = [];
+        $width = null;
+        $height = null;
 
-        if (preg_match($regexSizes, $infoString, $regs)) {
-            $width = isset($regs['width']) ? $regs['width'] : null;
-            $height = isset($regs['height']) ? $regs['height'] : null;
-        } else {
-            $width = null;
-            $height = null;
+        if (preg_match($regexSizes, $infoString, $matches)) {
+            $width = !empty($matches['width']) ? $matches['width'] : null;
+            $height = !empty($matches['height']) ? $matches['height'] : null;
         }
 
         return [
@@ -209,10 +208,9 @@ class FFmpeg
     public function getInputFileAudioBitrate()
     {
         $shellString = shell_exec($this->getBinaryPath()." -i '".$this->getInputFile()."'".' 2<&1');
-        $regs = [];
-
-        if (preg_match('/Audio: (.*?)(?<bitrate>\d+) kb\/s(.*?)/', $shellString, $regs)) {
-            return isset($regs['bitrate']) ? (int) $regs['bitrate'] : null;
+        $matches = [];
+        if (preg_match('/Audio: (.*?)(?<bitrate>\d+) kb\/s(.*?)/', $shellString, $matches)) {
+            return !empty($matches['bitrate']) ? (int) $matches['bitrate'] : null;
         }
 
         return null;
@@ -221,10 +219,9 @@ class FFmpeg
     public function getInputFileVideoBitrate()
     {
         $shellString = shell_exec($this->getBinaryPath()." -i '".$this->getInputFile()."'".' 2<&1');
-        $regs = [];
-
-        if (preg_match('/Video: (.*?)(?<bitrate>\d+) kb\/s(.*?)/', $shellString, $regs)) {
-            return isset($regs['bitrate']) ? (int) $regs['bitrate'] : null;
+        $matches = [];
+        if (preg_match('/Video: (.*?)(?<bitrate>\d+) kb\/s(.*?)/', $shellString, $matches)) {
+            return !empty($matches['bitrate']) ? (int) $matches['bitrate'] : null;
         }
 
         return null;

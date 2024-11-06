@@ -1,7 +1,7 @@
 {
     "name": "hemiframe/hemiframe",
     "description": "PHP micro framework",
-    "version": "4.1.0",
+    "version": "4.1.1",
     "keywords": [
         "PHP",
         "framework",
@@ -33,8 +33,8 @@
         "psr/http-message": "~2.0"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "~3.49",
-        "phpstan/phpstan": "~1.10",
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "phpstan/phpstan": "^1.12",
         "phpunit/phpunit": "^10.5"
     },
     "scripts": {
