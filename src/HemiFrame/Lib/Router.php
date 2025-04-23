@@ -51,7 +51,7 @@ class Router
         $requestUri = explode('?', $requestUri);
         $requestUri = $requestUri[0];
         $requestUri = urldecode($requestUri);
-        $requestUri = iconv(mb_detect_encoding($requestUri, mb_detect_order(), true), 'UTF-8', $requestUri);
+        $requestUri = iconv(mb_detect_encoding($requestUri, mb_detect_order(), true), 'UTF-8//IGNORE', $requestUri);
         $this->requestUri = $requestUri;
 
         return $this;
