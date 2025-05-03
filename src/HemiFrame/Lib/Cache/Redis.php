@@ -2,10 +2,16 @@
 
 namespace HemiFrame\Lib\Cache;
 
-class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
+class Redis implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
 {
+    private \Redis $redis;
     private $keyPrefix = '';
     private $defaultTtl = 120;
+
+    public function __construct(\Redis $redis)
+    {
+        $this->redis = $redis;
+    }
 
     public function getKeyPrefix(): string
     {
@@ -17,13 +23,6 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
         $this->keyPrefix = $keyPrefix;
 
         return $this;
-    }
-
-    public function checkApcExtension(): bool
-    {
-        $check = extension_loaded('apcu');
-
-        return $check;
     }
 
     /**
@@ -41,9 +40,7 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
             $time = $this->defaultTtl;
         }
 
-        $result = \apcu_add($this->keyPrefix.$key, serialize($value), $time);
-
-        return $result;
+        return $this->redis->set($this->keyPrefix.$key, serialize($value), ['ex' => $time]);
     }
 
     /**
@@ -54,8 +51,8 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
         if (empty($key)) {
             throw new InvalidArgumentException('Key is empty');
         }
-        $data = \apcu_fetch($this->keyPrefix.$key);
-        if (false !== $data) {
+        $data = $this->redis->get($this->keyPrefix.$key);
+        if ($this->has($key)) {
             return unserialize($data);
         }
 
@@ -73,26 +70,40 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
             throw new InvalidArgumentException('Enter key');
         }
 
-        return \apcu_delete($this->keyPrefix.$key);
+        return (bool) $this->redis->del($this->keyPrefix.$key);
     }
 
     public function clear(): bool
     {
-        return \apcu_clear_cache();
+        // Only deletes keys with the current prefix
+        $pattern = $this->keyPrefix.'*';
+        $it = null;
+        $keys = [];
+        while ($arr_keys = $this->redis->scan($it, $pattern)) {
+            $keys = array_merge($keys, $arr_keys);
+        }
+        if (!empty($keys)) {
+            $this->redis->del($keys);
+        }
+
+        return true;
     }
 
     /**
-     * @param string $key
-     *
      * @throws InvalidArgumentException
      */
-    public function has($key): bool
+    public function has(string $key): bool
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Enter key');
         }
+        $exists = $this->redis->exists($this->keyPrefix.$key);
 
-        return \apcu_exists($this->keyPrefix.$key);
+        if (!is_int($exists)) {
+            return false;
+        }
+
+        return $exists > 0;
     }
 
     public function exists(string $key): bool
@@ -109,9 +120,12 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
             throw new InvalidArgumentException('Keys must be array');
         }
 
+        $prefixedKeys = array_map(fn ($key) => $this->keyPrefix.$key, $keys);
+        $results = $this->redis->mget($prefixedKeys);
         $data = [];
-        foreach ($keys as $key) {
-            $data[$key] = $this->get($key, $default);
+        foreach ($keys as $i => $key) {
+            $value = $results[$i];
+            $data[$key] = (false !== $value && null !== $value) ? unserialize($value) : $default;
         }
 
         return $data;
@@ -139,9 +153,8 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
             throw new InvalidArgumentException('Keys must be array');
         }
 
-        foreach ($keys as $key) {
-            $this->delete($key);
-        }
+        $prefixedKeys = array_map(fn ($key) => $this->keyPrefix.$key, $keys);
+        $this->redis->del($prefixedKeys);
 
         return true;
     }
