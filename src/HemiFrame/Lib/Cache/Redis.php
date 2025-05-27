@@ -52,7 +52,7 @@ class Redis implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterf
             throw new InvalidArgumentException('Key is empty');
         }
         $data = $this->redis->get($this->keyPrefix.$key);
-        if ($this->has($key)) {
+        if (false !== $data) {
             return unserialize($data);
         }
 
@@ -125,7 +125,7 @@ class Redis implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterf
         $data = [];
         foreach ($keys as $i => $key) {
             $value = $results[$i];
-            $data[$key] = (false !== $value && null !== $value) ? unserialize($value) : $default;
+            $data[$key] = (false !== $value) ? unserialize($value) : $default;
         }
 
         return $data;
@@ -157,5 +157,10 @@ class Redis implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterf
         $this->redis->del($prefixedKeys);
 
         return true;
+    }
+
+    public function getRedis()
+    {
+        return $this->redis;
     }
 }
