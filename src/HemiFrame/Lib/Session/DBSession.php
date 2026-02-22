@@ -67,9 +67,9 @@ class DBSession implements \HemiFrame\Interfaces\Session
     {
         if (isset($this->data[$name])) {
             return $this->data[$name];
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     public function set(string $name, $value): self
@@ -248,7 +248,7 @@ class DBSession implements \HemiFrame\Interfaces\Session
             $stm->execute();
             $rows = $stm->fetchAll(\PDO::FETCH_OBJ);
 
-            if (is_array($rows) && 1 == count($rows)) {
+            if (1 == count($rows)) {
                 $this->data = unserialize($rows[0]->data);
 
                 return true;

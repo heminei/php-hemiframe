@@ -1,7 +1,7 @@
 {
     "name": "hemiframe/hemiframe",
     "description": "PHP micro framework",
-    "version": "4.2.2",
+    "version": "4.3.1",
     "keywords": [
         "PHP",
         "framework",
@@ -29,13 +29,13 @@
     },
     "require": {
         "php": ">=8.1",
-        "psr/simple-cache": "~2.0",
-        "psr/http-message": "~2.0"
+        "psr/simple-cache": "^2.0|^3.0",
+        "psr/http-message": "^2.0"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.64",
-        "phpstan/phpstan": "^1.12",
-        "phpunit/phpunit": "^10.5"
+        "friendsofphp/php-cs-fixer": "^3.94",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^13.0"
     },
     "scripts": {
         "php-cs-fixer": "php-cs-fixer fix --dry-run --verbose",
@@ -46,6 +46,7 @@
         "build": [
             "composer run-script php-cs-fixer",
             "composer run-script phpstan"
-        ]
+        ],
+        "tests": "phpunit --testdox"
     }
 }

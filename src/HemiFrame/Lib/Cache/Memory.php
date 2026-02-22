@@ -110,7 +110,7 @@ class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInter
     }
 
     /**
-     * @param array $keys
+     * @param array|mixed $keys
      */
     public function getMultiple($keys, $default = null): array
     {
@@ -142,7 +142,7 @@ class Memory implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInter
         return $result;
     }
 
-    public function deleteMultiple($keys)
+    public function deleteMultiple($keys): bool
     {
         if (!is_array($keys)) {
             throw new InvalidArgumentException('Keys must be array');

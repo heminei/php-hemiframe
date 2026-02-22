@@ -73,14 +73,12 @@ class CSS
 
     public function addString(string $string): self
     {
-        if (null !== $string) {
-            $this->files[] = [
-                'path' => null,
-                'content' => $string,
-                'md5' => md5($string),
-            ];
-            $this->content .= $string;
-        }
+        $this->files[] = [
+            'path' => null,
+            'content' => $string,
+            'md5' => md5($string),
+        ];
+        $this->content .= $string;
 
         return $this;
     }
@@ -113,8 +111,8 @@ class CSS
     {
         if (file_put_contents($filePath, $this->getContent())) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

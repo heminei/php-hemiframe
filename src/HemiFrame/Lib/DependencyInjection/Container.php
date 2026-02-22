@@ -109,9 +109,8 @@ class Container implements \HemiFrame\Interfaces\DependencyInjection\Container
                         $arguments[] = $this->get($type);
                     } elseif ($param->isOptional()) {
                         $arguments[] = $param->getDefaultValue();
-                    } else {
-                        // throw new Exception("Invalid constructor injection in " . $reflection->getName());
                     }
+                    // throw new Exception("Invalid constructor injection in " . $reflection->getName());
                 }
             }
             $class = $reflection->newInstanceWithoutConstructor();

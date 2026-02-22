@@ -78,9 +78,7 @@ class StringEditor
      */
     public function prependString(string $string): self
     {
-        if (null !== $string) {
-            $this->string = $string.$this->string;
-        }
+        $this->string = $string.$this->string;
 
         return $this;
     }

@@ -66,18 +66,14 @@ class Template
 
     /**
      * @param string               $id       Loop ID
-     * @param array|\Traversable   $array    Result Array
+     * @param iterable             $array    Result Array
      * @param object|null          $instance Object
      * @param string|\Closure|null $method   Method
      */
-    public function setLoop(string $id, $array, $instance = null, $method = null): self
+    public function setLoop(string $id, iterable $array, $instance = null, $method = null): self
     {
         if (null == $method) {
             $method = $id;
-        }
-
-        if (!is_array($array) && (($array instanceof \Traversable) == false)) {
-            throw new \InvalidArgumentException('Invalid array parameter');
         }
 
         do {
@@ -89,19 +85,20 @@ class Template
             $htmlString = '';
             $i = 1;
             $iteration = new Lib\Loop\Iteration($i);
-            if (!empty($array)) {
+            if (is_countable($array)) {
                 $iteration->setTotalCount(count($array));
-                foreach ($array as $value) {
-                    $itemClass = new Template($innerHtml);
-                    $iteration->setIndex($i);
-                    if (null === $instance) {
-                        $method($itemClass, $value, $iteration);
-                    } else {
-                        $instance->$method($itemClass, $value, $iteration);
-                    }
-                    $htmlString .= $itemClass->parse();
-                    ++$i;
+            }
+
+            foreach ($array as $value) {
+                $itemClass = new Template($innerHtml);
+                $iteration->setIndex($i);
+                if (null === $instance) {
+                    $method($itemClass, $value, $iteration);
+                } else {
+                    $instance->$method($itemClass, $value, $iteration);
                 }
+                $htmlString .= $itemClass->parse();
+                ++$i;
             }
 
             $this->html = $this->strReplaceFirst($outerHtml, $htmlString, $this->html);
@@ -112,26 +109,7 @@ class Template
 
     public function setSwitcher(string $id, string $value): self
     {
-        do {
-            $tag = 'wSwitcher';
-            $element = '<'.$tag.' id="'.$id.'">';
-            $outerHtml = $this->getElementOuterHtml($this->html, $element, $tag);
-            $innerHtml = $this->getElementInnerHtml($this->html, $element, $tag);
-
-            if (empty($outerHtml)) {
-                throw new \InvalidArgumentException("Can't find switcher with ID:".$id);
-            }
-
-            $tagCase = 'case';
-            $elementCase = '<'.$tagCase.' value="'.$value.'">';
-            $innerHtmlCase = $this->getElementInnerHtml($innerHtml, $elementCase, $tagCase);
-
-            if (empty($innerHtmlCase)) {
-                throw new \InvalidArgumentException("Can't find case with value '".$value."' in switcher with ID '".$id."'");
-            }
-
-            $this->html = $this->strReplaceFirst($outerHtml, $innerHtmlCase, $this->html);
-        } while (strstr($this->html, $element));
+        $this->applySwitcherValue($id, $value);
 
         return $this;
     }
@@ -158,12 +136,8 @@ class Template
      */
     public function clearSwitchers(): self
     {
-        $results = [];
-        preg_match_all('/\<wSwitcher id\=\"(?<ids>.*)\">/', $this->html, $results);
-        foreach ($results['ids'] as $id) {
-            $tag = 'wSwitcher';
-            $element = '<'.$tag.' id="'.$id.'">';
-            $outerHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+        foreach ($this->findAllElements('wSwitcher') as $element) {
+            $outerHtml = $this->getElementOuterHtml($this->html, $element, 'wSwitcher');
             $this->html = $this->strReplaceFirst($outerHtml, '', $this->html);
         }
 
@@ -176,9 +150,9 @@ class Template
             $this->autoRemoveLoops = $removeLoops;
 
             return $this;
-        } else {
-            return $this->autoRemoveLoops;
         }
+
+        return $this->autoRemoveLoops;
     }
 
     public function autoRemoveSwitchers($removeSwitchers = null)
@@ -187,9 +161,9 @@ class Template
             $this->autoRemoveSwitchers = $removeSwitchers;
 
             return $this;
-        } else {
-            return $this->autoRemoveSwitchers;
         }
+
+        return $this->autoRemoveSwitchers;
     }
 
     public function autoRemoveVariables($removeVariables = null)
@@ -198,9 +172,9 @@ class Template
             $this->autoRemoveVariables = $removeVariables;
 
             return $this;
-        } else {
-            return $this->autoRemoveVariables;
         }
+
+        return $this->autoRemoveVariables;
     }
 
     public function parse(): string
@@ -221,6 +195,15 @@ class Template
                 $tagToReplace = '{{'.$key.'}}';
                 $this->html = str_replace($tagToReplace, $value, $this->html);
             }
+        }
+
+        foreach ($this->findAllElements('wSwitcher') as $element) {
+            $attributes = $this->parseElementAttributes($element);
+            if (!isset($attributes['id'], $attributes['default'])) {
+                continue;
+            }
+
+            $this->applySwitcherValue($attributes['id'], $attributes['default']);
         }
 
         if ($this->autoRemoveLoops()) {
@@ -244,6 +227,35 @@ class Template
     public function getHtml(): ?string
     {
         return $this->html;
+    }
+
+    private function applySwitcherValue(string $id, string $value): void
+    {
+        do {
+            $tag = 'wSwitcher';
+            $element = $this->findElementById($this->html, $tag, $id);
+
+            if (empty($element)) {
+                throw new \InvalidArgumentException("Can't find switcher with ID:".$id);
+            }
+
+            $outerHtml = $this->getElementOuterHtml($this->html, $element, $tag);
+            $innerHtml = $this->getElementInnerHtml($this->html, $element, $tag);
+
+            if (empty($outerHtml)) {
+                throw new \InvalidArgumentException("Can't find switcher with ID:".$id);
+            }
+
+            $tagCase = 'case';
+            $elementCase = '<'.$tagCase.' value="'.$value.'">';
+            $innerHtmlCase = $this->getElementInnerHtml($innerHtml, $elementCase, $tagCase);
+
+            if (empty($innerHtmlCase)) {
+                throw new \InvalidArgumentException("Can't find case with value '".$value."' in switcher with ID '".$id."'");
+            }
+
+            $this->html = $this->strReplaceFirst($outerHtml, $innerHtmlCase, $this->html);
+        } while (strstr($this->html, $element));
     }
 
     private function strReplaceFirst(?string $search, string $replace, string $subject): string
@@ -290,5 +302,41 @@ class Template
         }
 
         return $innerHtml;
+    }
+
+    private function findElementById(string $html, string $tag, string $id): ?string
+    {
+        foreach ($this->findAllElements($tag, $html) as $element) {
+            $attributes = $this->parseElementAttributes($element);
+            if (($attributes['id'] ?? null) === $id) {
+                return $element;
+            }
+        }
+
+        return null;
+    }
+
+    private function findAllElements(string $tag, ?string $html = null): array
+    {
+        if (null === $html) {
+            $html = $this->html;
+        }
+
+        $matches = [];
+        preg_match_all('/<'.preg_quote($tag, '/').'\s+[^>]*>/', $html, $matches);
+
+        return $matches[0];
+    }
+
+    private function parseElementAttributes(string $element): array
+    {
+        $attributes = [];
+        preg_match_all('/(?<name>[a-zA-Z_:][a-zA-Z0-9_:-]*)\s*=\s*"(?<value>[^"]*)"/', $element, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $attributes[$match['name']] = $match['value'];
+        }
+
+        return $attributes;
     }
 }

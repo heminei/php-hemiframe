@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.1] - 2026-02-22
+
+### Added
+
+- added router unit tests (`tests/unit/Lib/RouterTest.php`)
+- added template unit tests for switcher behavior (`tests/unit/TemplateTest.php`)
+- added route attribute test coverage for optional arguments (`tests/unit/Lib/Routing/Attributes/RouteTest.php`)
+
+### Changed
+
+- updated package version to `4.3.1`
+- updated runtime and development dependency constraints in `composer.json`
+- updated lockfile dependencies to latest resolved versions (`composer.lock`)
+- added `tests` composer script (`phpunit --testdox`)
+- expanded PHPStan scan paths to include `examples` (`phpstan.neon`)
+- improved `Template` switcher parsing and default switcher handling (`src/HemiFrame/Template.php`)
+- updated multiple cache adapters for PSR simple-cache signature compatibility (`src/HemiFrame/Lib/Cache/*`)
+- applied code quality and static-analysis cleanups across core library classes
+
 ## [4.2.1] - 2025-05-03
 
 ### Changed

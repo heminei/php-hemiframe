@@ -57,9 +57,9 @@ class Image
     {
         if ('gif' == $this->getType()) {
             return $this->image->writeImages($filepath, true);
-        } else {
-            return $this->image->writeImage($filepath);
         }
+
+        return $this->image->writeImage($filepath);
     }
 
     public function output()

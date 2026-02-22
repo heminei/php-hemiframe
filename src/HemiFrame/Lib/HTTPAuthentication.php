@@ -34,12 +34,11 @@ class HTTPAuthentication
         if (isset($_SERVER['PHP_AUTH_USER']) and (array_key_exists($_SERVER['PHP_AUTH_USER'], $this->getUsers())
             and $_SERVER['PHP_AUTH_PW'] == $this->users[$_SERVER['PHP_AUTH_USER']])) {
             return true;
-        } else {
-            header('WWW-Authenticate: Basic realm="'.$this->getMessage().'"');
-            header('HTTP/1.0 401 Unauthorized');
-
-            return false;
         }
+        header('WWW-Authenticate: Basic realm="'.$this->getMessage().'"');
+        header('HTTP/1.0 401 Unauthorized');
+
+        return false;
     }
 
     public function addUser(string $user, string $password): self

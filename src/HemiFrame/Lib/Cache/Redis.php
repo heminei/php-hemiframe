@@ -112,7 +112,7 @@ class Redis implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterf
     }
 
     /**
-     * @param array $keys
+     * @param array|mixed $keys
      */
     public function getMultiple($keys, $default = null): array
     {
@@ -147,7 +147,7 @@ class Redis implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterf
         return $result;
     }
 
-    public function deleteMultiple($keys)
+    public function deleteMultiple($keys): bool
     {
         if (!is_array($keys)) {
             throw new InvalidArgumentException('Keys must be array');

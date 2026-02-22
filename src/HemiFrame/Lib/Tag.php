@@ -58,9 +58,9 @@ class Tag
     {
         if (isset($this->attrValues[$attr])) {
             return $this->attrValues[$attr];
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     /**
