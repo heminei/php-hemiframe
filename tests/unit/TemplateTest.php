@@ -71,4 +71,13 @@ class TemplateTest extends \PHPUnit\Framework\TestCase
 
         $this->assertSame('B-D', $template->parse());
     }
+
+    public function testSetSwitcherSupportsEmptyCaseBody(): void
+    {
+        $template = new \HemiFrame\Template('<wSwitcher id="showUnsubscribeUrl" default="true"><case value="true">Value true</case><case value="false"></case></wSwitcher>');
+
+        $template->setSwitcher('showUnsubscribeUrl', 'false');
+
+        $this->assertSame('', $template->parse());
+    }
 }

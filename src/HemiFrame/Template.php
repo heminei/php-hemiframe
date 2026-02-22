@@ -250,7 +250,7 @@ class Template
             $elementCase = '<'.$tagCase.' value="'.$value.'">';
             $innerHtmlCase = $this->getElementInnerHtml($innerHtml, $elementCase, $tagCase);
 
-            if (empty($innerHtmlCase)) {
+            if (null === $innerHtmlCase) {
                 throw new \InvalidArgumentException("Can't find case with value '".$value."' in switcher with ID '".$id."'");
             }
 
