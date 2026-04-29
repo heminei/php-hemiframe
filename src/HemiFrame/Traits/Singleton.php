@@ -12,7 +12,7 @@ trait Singleton
     public static function instance(): self
     {
         if (null === self::$_instance) {
-            self::$_instance = new self();
+            self::$_instance = new static();
         }
 
         return self::$_instance;

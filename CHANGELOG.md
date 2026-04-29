@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.3] - 2026-04-29
+
+### Changed
+
+- made `HemiFrame\Interfaces\Cache` extend `Psr\SimpleCache\CacheInterface` (`src/HemiFrame/Interfaces/Cache.php`)
+- updated `get`, `set`, and `delete` signatures in `HemiFrame\Interfaces\Cache` to match PSR-16 (`src/HemiFrame/Interfaces/Cache.php`)
+- added full type declarations to all properties and method signatures in all cache adapter classes (`src/HemiFrame/Lib/Cache/Apc.php`, `File.php`, `Memcached.php`, `Memory.php`, `Redis.php`)
+- added `DateInterval` support to `set` and `setMultiple` in all cache adapters
+
 ## [4.3.2] - 2026-02-22
 
 ### Changed

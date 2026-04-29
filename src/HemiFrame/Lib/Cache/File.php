@@ -4,9 +4,9 @@ namespace HemiFrame\Lib\Cache;
 
 class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
 {
-    private $folder = 'tmp/cache/';
-    private $keyPrefix = '';
-    private $defaultTtl = 120;
+    private string $folder = 'tmp/cache/';
+    private string $keyPrefix = '';
+    private int $defaultTtl = 120;
 
     public function getFolder(): string
     {
@@ -50,35 +50,32 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
     }
 
     /**
-     * @param string $key
-     * @param int    $time
-     *
      * @throws InvalidArgumentException
      */
-    public function set($key, $value, $time = null): bool
+    public function set(string $key, mixed $value, int|\DateInterval|null $ttl = null): bool
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Enter key');
         }
-        if (null === $time) {
-            $time = $this->defaultTtl;
+        if ($ttl instanceof \DateInterval) {
+            $ttl = (int) (new \DateTime())->add($ttl)->getTimestamp() - time();
+        }
+        if (null === $ttl) {
+            $ttl = $this->defaultTtl;
         }
 
         if (!is_writable($this->getFolder())) {
             throw new \RuntimeException("Can't be save file: ".$this->getFile($key));
         }
         $data = [
-            'expiryTime' => time() + $time,
+            'expiryTime' => time() + $ttl,
             'value' => $value,
         ];
 
         return false !== file_put_contents($this->getFile($key), serialize($data));
     }
 
-    /**
-     * @param string $key
-     */
-    public function get($key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Key is empty');
@@ -98,11 +95,9 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
     }
 
     /**
-     * @param string $key
-     *
      * @throws InvalidArgumentException
      */
-    public function delete($key): bool
+    public function delete(string $key): bool
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Enter key');
@@ -134,11 +129,9 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
     }
 
     /**
-     * @param string $key
-     *
      * @throws InvalidArgumentException
      */
-    public function has($key): bool
+    public function has(string $key): bool
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Enter key');
@@ -164,10 +157,7 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
         return $this->has($key);
     }
 
-    /**
-     * @param array|mixed $keys
-     */
-    public function getMultiple($keys, $default = null): array
+    public function getMultiple(iterable $keys, mixed $default = null): array
     {
         if (!is_array($keys)) {
             throw new InvalidArgumentException('Keys must be array');
@@ -181,7 +171,7 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
         return $data;
     }
 
-    public function setMultiple($values, $ttl = null): bool
+    public function setMultiple(iterable $values, int|\DateInterval|null $ttl = null): bool
     {
         if (!is_array($values)) {
             throw new InvalidArgumentException('Values must be array');
@@ -197,7 +187,7 @@ class File implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfa
         return $result;
     }
 
-    public function deleteMultiple($keys): true
+    public function deleteMultiple(iterable $keys): bool
     {
         if (!is_array($keys)) {
             throw new InvalidArgumentException('Keys must be array');

@@ -4,8 +4,8 @@ namespace HemiFrame\Lib\Cache;
 
 class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterface
 {
-    private $keyPrefix = '';
-    private $defaultTtl = 120;
+    private string $keyPrefix = '';
+    private int $defaultTtl = 120;
 
     public function getKeyPrefix(): string
     {
@@ -27,29 +27,26 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
     }
 
     /**
-     * @param string $key
-     * @param int    $time
-     *
      * @throws InvalidArgumentException
      */
-    public function set($key, $value, $time = null): bool
+    public function set(string $key, mixed $value, int|\DateInterval|null $ttl = null): bool
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Enter key');
         }
-        if (null === $time) {
-            $time = $this->defaultTtl;
+        if ($ttl instanceof \DateInterval) {
+            $ttl = (int) (new \DateTime())->add($ttl)->getTimestamp() - time();
+        }
+        if (null === $ttl) {
+            $ttl = $this->defaultTtl;
         }
 
-        $result = \apcu_add($this->keyPrefix.$key, serialize($value), $time);
+        $result = \apcu_add($this->keyPrefix.$key, serialize($value), $ttl);
 
         return $result;
     }
 
-    /**
-     * @param string $key
-     */
-    public function get($key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Key is empty');
@@ -63,11 +60,9 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
     }
 
     /**
-     * @param string $key
-     *
      * @throws InvalidArgumentException
      */
-    public function delete($key): bool
+    public function delete(string $key): bool
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Enter key');
@@ -82,11 +77,9 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
     }
 
     /**
-     * @param string $key
-     *
      * @throws InvalidArgumentException
      */
-    public function has($key): bool
+    public function has(string $key): bool
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Enter key');
@@ -100,10 +93,7 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
         return $this->has($key);
     }
 
-    /**
-     * @param array|mixed $keys
-     */
-    public function getMultiple($keys, $default = null): array
+    public function getMultiple(iterable $keys, mixed $default = null): array
     {
         if (!is_array($keys)) {
             throw new InvalidArgumentException('Keys must be array');
@@ -117,7 +107,7 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
         return $data;
     }
 
-    public function setMultiple($values, $ttl = null): bool
+    public function setMultiple(iterable $values, int|\DateInterval|null $ttl = null): bool
     {
         if (!is_array($values)) {
             throw new InvalidArgumentException('Values must be array');
@@ -133,7 +123,7 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
         return $result;
     }
 
-    public function deleteMultiple($keys): bool
+    public function deleteMultiple(iterable $keys): bool
     {
         if (!is_array($keys)) {
             throw new InvalidArgumentException('Keys must be array');

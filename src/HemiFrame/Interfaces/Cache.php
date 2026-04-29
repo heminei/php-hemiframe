@@ -6,17 +6,17 @@
 
 namespace HemiFrame\Interfaces;
 
-interface Cache
+interface Cache extends \Psr\SimpleCache\CacheInterface
 {
     public function getKeyPrefix(): string;
 
     public function setKeyPrefix(string $keyPrefix);
 
-    public function get($key, $default = null);
+    public function get(string $key, mixed $default = null): mixed;
 
-    public function set($key, $value, $time);
+    public function set(string $key, mixed $value, int|\DateInterval|null $ttl = null): bool;
 
-    public function delete($key): bool;
+    public function delete(string $key): bool;
 
     public function exists(string $key): bool;
 }
