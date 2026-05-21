@@ -41,7 +41,7 @@ class Apc implements \HemiFrame\Interfaces\Cache, \Psr\SimpleCache\CacheInterfac
             $ttl = $this->defaultTtl;
         }
 
-        $result = \apcu_add($this->keyPrefix.$key, serialize($value), $ttl);
+        $result = \apcu_store($this->keyPrefix.$key, serialize($value), $ttl);
 
         return $result;
     }
